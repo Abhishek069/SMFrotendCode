@@ -3,12 +3,15 @@ import Header from "../components/Header";
 import MatkaTable from "../components/JodiMatkaTable";
 import { useParams } from "react-router-dom";
 import { api } from "../lib/api";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const JodiPanPage = () => {
   // Initialize with an empty object to prevent errors when trying to access properties
   const [singleGameData, setSingleGameData] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [jsonFile, setJsonFile] = useState(null);
 
   const { id } = useParams(); // This correctly gets the game ID from the URL
 
@@ -17,7 +20,7 @@ const JodiPanPage = () => {
       const data = await api(`/AllGames/${id}`);
       if (data.success) {
         setSingleGameData(data.data);
-    } else {
+      } else {
         setError("Failed to fetch game data.");
       }
     } catch (err) {
@@ -41,6 +44,33 @@ const JodiPanPage = () => {
   if (error) {
     return <div>Error: {error}</div>;
   }
+
+  const handleFileUpload = async () => {
+    try {
+      if (!jsonFile) {
+        toast.warn("Please select a file first!");
+        return;
+      }
+
+      const fileText = await jsonFile.text();
+      const jsonData = JSON.parse(fileText);
+
+      const response = await api("/AllGames/updateGamesData", {
+        method: "POST",
+        body: JSON.stringify(jsonData),
+      });
+
+      if (response.success) {
+        toast.success("Game data updated successfully!");
+        fetchSingleGameData(); // refresh current game's data
+      } else {
+        toast.error(response.message || "Failed to update game data!");
+      }
+    } catch (err) {
+      console.error("❌ Error uploading file:", err);
+      toast.error("Error updating game data");
+    }
+  };
 
   // Grouping the result data by day.
   // This will create an object like:
@@ -91,6 +121,33 @@ const JodiPanPage = () => {
       <div className="bg-warning m-1 border border-white py-3 text-center">
         <p>{description}</p>
       </div>
+      <div
+        className="border m-1 border-danger text-center py-2"
+        style={{ "background-color": "Pink" }}
+      >
+        <h3>{singleGameData.name} JODI CHART</h3>
+      </div>
+      {/* 🔹 JSON File Upload Section */}
+      <div
+        className="bg-light border border-dark p-3 m-2"
+        style={{ borderRadius: "10px" }}
+      >
+        <h5>Import / Update Game Data</h5>
+        <input
+          type="file"
+          accept=".json"
+          onChange={(e) => setJsonFile(e.target.files[0])}
+          className="form-control my-2"
+        />
+        <button
+          onClick={handleFileUpload}
+          className="btn btn-success"
+          disabled={!jsonFile}
+        >
+          Upload & Update
+        </button>
+      </div>
+
       <div
         className="border m-1 border-danger text-center py-2"
         style={{ "background-color": "Pink" }}
