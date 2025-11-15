@@ -13,6 +13,8 @@ const JodiPanPage = () => {
   const [error, setError] = useState(null);
   const [jsonFile, setJsonFile] = useState(null);
 
+  const userRole = localStorage.getItem("role");
+
   const { id } = useParams(); // This correctly gets the game ID from the URL
 
   const fetchSingleGameData = async () => {
@@ -128,25 +130,29 @@ const JodiPanPage = () => {
         <h3>{singleGameData.name} JODI CHART</h3>
       </div>
       {/* 🔹 JSON File Upload Section */}
-      <div
-        className="bg-light border border-dark p-3 m-2"
-        style={{ borderRadius: "10px" }}
-      >
-        <h5>Import / Update Game Data</h5>
-        <input
-          type="file"
-          accept=".json"
-          onChange={(e) => setJsonFile(e.target.files[0])}
-          className="form-control my-2"
-        />
-        <button
-          onClick={handleFileUpload}
-          className="btn btn-success"
-          disabled={!jsonFile}
+      {userRole === "Admin" ? (
+        <div
+          className="bg-light border border-dark p-3 m-2"
+          style={{ borderRadius: "10px" }}
         >
-          Upload & Update
-        </button>
-      </div>
+          <h5>Import / Update Game Data</h5>
+          <input
+            type="file"
+            accept=".json"
+            onChange={(e) => setJsonFile(e.target.files[0])}
+            className="form-control my-2"
+          />
+          <button
+            onClick={handleFileUpload}
+            className="btn btn-success"
+            disabled={!jsonFile}
+          >
+            Upload & Update
+          </button>
+        </div>
+      ) : (
+        <div></div>
+      )}
 
       <div
         className="border m-1 border-danger text-center py-2"
