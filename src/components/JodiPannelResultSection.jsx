@@ -562,7 +562,7 @@ export default function JodiPannelResultSection() {
       style={{ backgroundColor: "#ffcc99", width:"100%" }}
     >
       <div className="bg-pink m-1 p-2 jodi-panel-container-second">
-        <h3>WORLD ME SABSE FAST SATTA MATKA RESULT</h3>
+        <h3>SABSE PAHILE OR SABSE SAHI FAST SATTA MATKA RESULT</h3>
       </div>
       {role === "Admin" && (
         <div className="mb-3">
