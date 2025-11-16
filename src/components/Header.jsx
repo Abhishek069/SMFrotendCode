@@ -1,56 +1,41 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import "./Comman.css"; // <-- add this
 
 const Header = () => {
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    // check token on mount
     const token = localStorage.getItem("authToken");
-    if (token) {
-      setIsLoggedIn(true);
-    }
+    if (token) setIsLoggedIn(true);
   }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("authToken");
     localStorage.removeItem("userRole");
     setIsLoggedIn(false);
-    navigate("/login"); // redirect after logout
+    navigate("/login");
   };
 
   return (
-    <header
-      className="m-1 border border-white py-3"
-      style={{ backgroundColor: "#ffcc99" }}
-    >
-      <div
-        className="d-flex align-items-center justify-content-between"
-        style={{ maxWidth: "1200px", margin: "0 auto", width: "100%" }}
-      >
-        {/* Empty div to help center title */}
-        <div style={{ flex: 1 }}></div>
+    <header className="header-container">
+      <div className="header-inner">
+        
+        {/* Branding */}
+        <div className="logo-block">
+          <span className="logo-dp">Dp</span>
+          <span className="logo-rest">BOSS Services</span>
+        </div>
 
-        {/* Centered Title */}
-        <h1
-          className="m-0 text-danger fw-bold text-center"
-          style={{ fontFamily: "revert", fontSize: "2rem" }}
-        >
-          <span className="text-pink">Satta Matka </span>Aajj Tak
-        </h1>
-
-        {/* Login / Logout Button */}
-        <div style={{ flex: 1, textAlign: "right" }}>
+        {/* Right Section */}
+        <div className="header-actions">
           {!isLoggedIn ? (
-            <button
-              className="btn btn-primary"
-              onClick={() => navigate("/login")}
-            >
+            <button className="header-btn login" onClick={() => navigate("/login")}>
               Login
             </button>
           ) : (
-            <button className="btn btn-info" onClick={handleLogout}>
+            <button className="header-btn logout" onClick={handleLogout}>
               Logout
             </button>
           )}
