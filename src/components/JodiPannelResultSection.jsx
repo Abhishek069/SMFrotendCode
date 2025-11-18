@@ -114,6 +114,20 @@ export default function JodiPannelResultSection() {
     address: "",
   });
 
+  const [editFullGame, setEditFullGame] = useState({
+    _id: "",
+    name: "",
+    owner: "",
+    startTime: "",
+    endTime: "",
+    resultNo: "",
+    nameColor: "",
+    resultColor: "",
+    panelColor: "",
+    notificationColor: "",
+    status: "Active",
+  });
+
   const [deleteGameName, setDeleteGameName] = useState("");
   const [linkForUpdateGame, setLinkForUpdateGame] = useState("");
   const [selectedStatus, setSelectedStatus] = useState();
@@ -287,6 +301,45 @@ export default function JodiPannelResultSection() {
       setError(err.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadGameDetails = (gameId) => {
+    const g = games.find((x) => x._id === gameId);
+    if (!g) return;
+
+    setEditFullGame({
+      _id: g._id,
+      name: g.name,
+      owner: g.owner,
+      startTime: g.startTime,
+      endTime: g.endTime,
+      resultNo: g.resultNo || "",
+      nameColor: g.nameColor || "#000000",
+      resultColor: g.resultColor || "#000000",
+      panelColor: g.panelColor || "#ffffff",
+      notificationColor: g.notificationColor || "#ff0000",
+      status: g.status,
+    });
+  };
+
+  const handleFullUpdate = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await api(`/AllGames/updateFull/${editFullGame._id}`, {
+        method: "PUT",
+        body: JSON.stringify(editFullGame),
+      });
+
+      if (res.success) {
+        toast.success("Game updated successfully!");
+        fetchGamesAgain();
+        setShowModal(false);
+      } else {
+        toast.error(res.error || "Update failed");
+      }
+    } catch (err) {
+      toast.error("Error updating game");
     }
   };
 
@@ -533,7 +586,12 @@ export default function JodiPannelResultSection() {
     const closeTime = lastClose?.[2] || "";
     const closeDay = lastClose?.[4] || "";
 
-    if (lastOpen && lastClose && openDay === closeDay && lastOpen[2].split('T')[0] === lastClose[2].split('T')[0]) {
+    if (
+      lastOpen &&
+      lastClose &&
+      openDay === closeDay &&
+      lastOpen[2].split("T")[0] === lastClose[2].split("T")[0]
+    ) {
       return `${openMain}-${openDigit}${closeDigit}-${closeMain}`;
     }
 
@@ -559,7 +617,7 @@ export default function JodiPannelResultSection() {
   return (
     <div
       className=" border border-white p-0.5" // <--- 'm-1' and 'p-3' create space
-      style={{ backgroundColor: "#ffcc99", width:"100%" }}
+      style={{ backgroundColor: "#ffcc99", width: "100%" }}
     >
       <div className="bg-pink m-1 p-2 jodi-panel-container-second">
         <h3>SABSE PAHILE OR SABSE SAHI FAST SATTA MATKA RESULT</h3>
@@ -601,6 +659,15 @@ export default function JodiPannelResultSection() {
             }}
           >
             Import By Link
+          </button>
+          <button
+            className="btn btn-warning m-1"
+            onClick={() => {
+              setModalType("editFullGame");
+              setShowModal(true);
+            }}
+          >
+            EDIT GAME
           </button>
         </div>
       )}
@@ -745,7 +812,9 @@ export default function JodiPannelResultSection() {
                     fontSize: "28px",
                   }}
                 >
-                  {isOlderThan12Hours(item.updatedAt) ? "***-**-***" : displayResult}
+                  {isOlderThan12Hours(item.updatedAt)
+                    ? "***-**-***"
+                    : displayResult}
                 </h5>
                 {/* Action Buttons (Edit / Set Live Time) */}
                 <div className="d-flex justify-content-center mt-0 gap-1">
@@ -1128,6 +1197,167 @@ export default function JodiPannelResultSection() {
                 <button
                   type="button"
                   className="btn btn-secondary"
+                  onClick={() => setShowModal(false)}
+                >
+                  Cancel
+                </button>
+              </form>
+            )}
+            {modalType === "editFullGame" && (
+              <form onSubmit={handleFullUpdate} className="overflow-auto">
+                <h3>Edit Game</h3>
+
+                {/* Select Game */}
+                <select
+                  className="form-control"
+                  onChange={(e) => loadGameDetails(e.target.value)}
+                >
+                  <option value="">-- Select Game --</option>
+                  {games.map((g) => (
+                    <option key={g._id} value={g._id}>
+                      {g.name}
+                    </option>
+                  ))}
+                </select>
+
+                {editFullGame._id && (
+                  <>
+                    <input
+                      placeholder="Name"
+                      value={editFullGame.name}
+                      onChange={(e) =>
+                        setEditFullGame({
+                          ...editFullGame,
+                          name: e.target.value,
+                        })
+                      }
+                    />
+
+                    <label>Owner</label>
+                    <select
+                      className="form-control"
+                      value={editFullGame.owner}
+                      onChange={(e) =>
+                        setEditFullGame({
+                          ...editFullGame,
+                          owner: e.target.value,
+                        })
+                      }
+                    >
+                      {allUser.map((u) => (
+                        <option key={u._id} value={u.name}>
+                          {u.name}
+                        </option>
+                      ))}
+                    </select>
+
+                    <label>Start Time</label>
+                    <input
+                      type="time"
+                      value={editFullGame.startTime}
+                      onChange={(e) =>
+                        setEditFullGame({
+                          ...editFullGame,
+                          startTime: e.target.value,
+                        })
+                      }
+                    />
+
+                    <label>End Time</label>
+                    <input
+                      type="time"
+                      value={editFullGame.endTime}
+                      onChange={(e) =>
+                        setEditFullGame({
+                          ...editFullGame,
+                          endTime: e.target.value,
+                        })
+                      }
+                    />
+
+                    <input
+                      placeholder="Result No"
+                      value={editFullGame.resultNo}
+                      onChange={(e) =>
+                        setEditFullGame({
+                          ...editFullGame,
+                          resultNo: e.target.value,
+                        })
+                      }
+                    />
+
+                    <label>Name Color</label>
+                    <input
+                      type="color"
+                      value={editFullGame.nameColor}
+                      onChange={(e) =>
+                        setEditFullGame({
+                          ...editFullGame,
+                          nameColor: e.target.value,
+                        })
+                      }
+                    />
+
+                    <label>Result Color</label>
+                    <input
+                      type="color"
+                      value={editFullGame.resultColor}
+                      onChange={(e) =>
+                        setEditFullGame({
+                          ...editFullGame,
+                          resultColor: e.target.value,
+                        })
+                      }
+                    />
+
+                    <label>Panel Color</label>
+                    <input
+                      type="color"
+                      value={editFullGame.panelColor}
+                      onChange={(e) =>
+                        setEditFullGame({
+                          ...editFullGame,
+                          panelColor: e.target.value,
+                        })
+                      }
+                    />
+
+                    <label>Notification Color</label>
+                    <input
+                      type="color"
+                      value={editFullGame.notificationColor}
+                      onChange={(e) =>
+                        setEditFullGame({
+                          ...editFullGame,
+                          notificationColor: e.target.value,
+                        })
+                      }
+                    />
+
+                    <label>Status</label>
+                    <select
+                      className="form-control"
+                      value={editFullGame.status}
+                      onChange={(e) =>
+                        setEditFullGame({
+                          ...editFullGame,
+                          status: e.target.value,
+                        })
+                      }
+                    >
+                      <option value="Active">Active</option>
+                      <option value="Inactive">Inactive</option>
+                    </select>
+
+                    <button className="btn btn-success mt-3">
+                      Save Changes
+                    </button>
+                  </>
+                )}
+
+                <button
+                  type="button"
+                  className="btn btn-secondary mt-3"
                   onClick={() => setShowModal(false)}
                 >
                   Cancel
