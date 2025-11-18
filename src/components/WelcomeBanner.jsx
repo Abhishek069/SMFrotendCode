@@ -8,18 +8,22 @@ const WelcomeBanner = () => {
       <img className="banner-logo" src={logo} alt="Logo" />
 
       <div className="banner-text">
-        
-        <p className="welcome-message">
-          <strong>!! Welcome to  !!</strong>
+
+        {/* change p to div */}
+        <div className="welcome-message">
+          <strong>!! Welcome to !!</strong>
           <br />
+
+          {/* logo-block can stay as div */}
           <div className="logo-block">
-          <span className="logo-dp">Dp</span>
-          <span className="logo-rest">BOSS Services</span>
-        </div>
+            <span className="logo-dp">Dp</span>
+            <span className="logo-rest">BOSS Services</span>
+          </div>
+
           Fastest Satta Matka Results | Live Jodi • Panel • Fix Games
-        </p>
+        </div>
+
       </div>
-      
     </div>
   );
 };
