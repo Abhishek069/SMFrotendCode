@@ -19,7 +19,7 @@ export default function AdminRoute({ children }) {
 
   // If role is not admin → redirect
   if (user.role !== "admin") {
-    return <Navigate to="/" />;
+    return <Navigate to="/allUser" />;
   }
 
   return children;

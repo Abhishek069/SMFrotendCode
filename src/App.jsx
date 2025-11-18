@@ -29,10 +29,7 @@ export default function App() {
           {/* ❗ Protected Admin Route */}
           <Route
             path="/allUser"
-            element={
-              <AdminRoute>
-                <AllUsersPage />
-              </AdminRoute>
+            element={ <AllUsersPage/>
             }
           />
 
