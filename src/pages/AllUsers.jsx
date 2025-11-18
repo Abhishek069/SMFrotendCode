@@ -1,9 +1,21 @@
 import React, { useEffect, useState } from "react";
 import { api } from "../lib/api";
+import { useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Header from "../components/Header";
 const AllUsersPage = () => {
+
+  const navigate = useNavigate()
+  const role  = localStorage.getItem('userRole')
+  console.log(role);
+
+  useEffect(()=>{
+    if(role!=='Admin'){
+      navigate('/')
+    }
+  },[role])
+  
   const [users, setUsers] = useState([]);
 
   const [loading, setLoading] = useState(true);

@@ -29,8 +29,7 @@ export default function App() {
           {/* ❗ Protected Admin Route */}
           <Route
             path="/allUser"
-            element={ <AllUsersPage/>
-            }
+            element={ <AllUsersPage/>}
           />
 
           {/* Catch-all → redirect unknown routes */}
