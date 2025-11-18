@@ -1,9 +1,12 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
-import JodiPanPage from './pages/JodiPanPage';
-import PanelPage from './pages/PanelPage';
-import SessionWrapper from "./SessionWrapper"; // <-- import wrapper
+import JodiPanPage from "./pages/JodiPanPage";
+import AllUsersPage from "./pages/AllUsers";
+import PanelPage from "./pages/PanelPage";
+import SessionWrapper from "./SessionWrapper";
+import AdminRoute from "./AdminRoute";
+
 import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 
@@ -12,18 +15,30 @@ export default function App() {
     <Router>
       <SessionWrapper>
         <Routes>
-          {/* Default route = HomePage */}
+
+          {/* Default route = Home */}
           <Route path="/" element={<HomePage />} />
 
-          {/* Explicit login route */}
+          {/* Login */}
           <Route path="/login" element={<LoginPage />} />
 
           {/* Other pages */}
           <Route path="/JodiPanPage/:id" element={<JodiPanPage />} />
           <Route path="/PanelPage/:id" element={<PanelPage />} />
 
-          {/* Catch-all → redirect unknown routes to Home */}
+          {/* ❗ Protected Admin Route */}
+          <Route
+            path="/allUser"
+            element={
+              <AdminRoute>
+                <AllUsersPage />
+              </AdminRoute>
+            }
+          />
+
+          {/* Catch-all → redirect unknown routes */}
           <Route path="*" element={<Navigate to="/" />} />
+
         </Routes>
       </SessionWrapper>
     </Router>
