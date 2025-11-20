@@ -1069,15 +1069,22 @@ export default function JodiPannelResultSection() {
                   }
                   required
                 />
-                <input
+                <label htmlFor="role">Role</label>
+                <select
+                  id="role"
                   name="role"
-                  placeholder="Role"
+                  className="form-control"
                   value={newAgent.role}
                   onChange={(e) =>
                     setNewAgent({ ...newAgent, role: e.target.value })
                   }
                   required
-                />
+                >
+                  <option value="">-- Select Role --</option>
+                  <option value="Agent">Agent</option>
+                  <option value="Admin">Admin</option>
+                </select>
+
                 <input
                   name="address"
                   placeholder="Address"
