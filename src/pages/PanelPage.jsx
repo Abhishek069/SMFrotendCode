@@ -86,7 +86,7 @@ const PanelPage = () => {
       <Header />
       <div
         className="border m-1 border-danger text-center py-2"
-        style={{ "background-color": "Pink" }}
+        style={{ "backgroundColor": "Pink" }}
       >
         <h3>{singleGameData.name} JODI CHART</h3>
       </div>
@@ -95,7 +95,7 @@ const PanelPage = () => {
       </div>
       <div
         className="border m-1 border-danger text-center py-2"
-        style={{ "background-color": "Pink" }}
+        style={{ "backgroundColor": "Pink" }}
       >
         <h3>{singleGameData.name}</h3>
         <h3>
@@ -114,7 +114,7 @@ const PanelPage = () => {
       <PanelMatkaTable groupedData={groupedByDay} gameName={singleGameData.name}  groupedByDayOpen={groupedByDayOpen}/>
       <div
         className="border m-1 border-danger text-center py-2"
-        style={{ "background-color": "Pink" }}
+        style={{ "backgroundColor": "Pink" }}
       >
         <h3>{singleGameData.name}</h3>
         <h3>

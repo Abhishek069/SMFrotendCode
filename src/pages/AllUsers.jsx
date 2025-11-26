@@ -4,10 +4,20 @@ import { useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Header from "../components/Header";
+import { jwtDecode } from "jwt-decode";
 const AllUsersPage = () => {
 
   const navigate = useNavigate()
-  const role  = localStorage.getItem('userRole')
+  const token = localStorage.getItem("authToken");
+  let role  = null
+  if (token) {
+      try {
+        const decoded = jwtDecode(token);
+        role = decoded.role;
+      } catch (err) {
+        console.error("Invalid token", err);
+      }
+    }
   console.log(role);
 
   useEffect(()=>{

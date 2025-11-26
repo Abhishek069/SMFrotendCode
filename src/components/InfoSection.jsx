@@ -12,6 +12,7 @@ const InfoSection = () => {
     try {
       const decoded = jwtDecode(token);
       role = decoded.role;
+      
     } catch (err) {
       console.error("Invalid token", err);
     }

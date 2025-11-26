@@ -17,6 +17,7 @@ const ScrollingNotification = ({
 }) => {
   const containerRef = useRef(null);
   const contentRef = useRef(null);
+
   const [animationDuration, setAnimationDuration] = useState(baseSpeed);
 
   if (!messages || messages.length === 0) return null;
@@ -132,6 +133,17 @@ export default function JodiPannelResultSection() {
   const [linkForUpdateGame, setLinkForUpdateGame] = useState("");
   const [selectedStatus, setSelectedStatus] = useState();
   const nowDateAndTime = new Date().toISOString();
+
+  // ⭐ NEW STATES FOR RANGE RESULT MODAL ⭐
+  const [showRangeModal, setShowRangeModal] = useState(false);
+  const [rangeStart, setRangeStart] = useState("");
+  const [rangeEnd, setRangeEnd] = useState("");
+  const [rangeDays, setRangeDays] = useState([]);
+  const [rangeData, setRangeData] = useState({});
+  const [rangeGameId, setRangeGameId] = useState("");
+  // errors for each date key, e.g. { "2025-01-25": "message" }
+  const [rangeErrors, setRangeErrors] = useState({});
+
   // console.log(nowDateAndTime);
 
   // 🔹 Handlers
@@ -208,6 +220,145 @@ export default function JodiPannelResultSection() {
         console.log("ig");
         toast.error(err.message || "Something went wrong!");
       }
+    }
+  };
+
+  // ⭐ Create continuous dates from start → end
+  const getDatesBetween = (start, end) => {
+    const s = new Date(start);
+    const e = new Date(end);
+    const list = [];
+    let cur = new Date(s);
+
+    while (cur <= e) {
+      list.push(new Date(cur));
+      cur.setDate(cur.getDate() + 1);
+    }
+
+    return list;
+  };
+
+  // ⭐ Auto-update list whenever start or end changes
+  useEffect(() => {
+    if (rangeStart && rangeEnd) {
+      const days = getDatesBetween(rangeStart, rangeEnd);
+      setRangeDays(days);
+
+      // Create input controls
+      const obj = {};
+      days.forEach((d) => {
+        const key = d.toISOString().split("T")[0];
+        obj[key] = { result: "", type: "Open" };
+      });
+
+      setRangeData(obj);
+    }
+  }, [rangeStart, rangeEnd]);
+
+  // ⭐ Compute check digit (sum last 3 digits % 10)
+  const computeCheckDigit = (num) => {
+    const digits = num.split("").map(Number);
+    const last3 = digits.slice(-3);
+    const sum = last3.reduce((a, b) => a + b, 0);
+    return sum % 10;
+  };
+
+  // ⭐ Save range results (multiple days)
+  const handleSaveRangeResults = async () => {
+    if (!rangeGameId) {
+      toast.error("Please select a game");
+      return;
+    }
+    if (!rangeDays || rangeDays.length === 0) {
+      toast.error("Please select a date range");
+      return;
+    }
+
+    const errors = {};
+    const preparedRows = []; // { key, date, mainDigits, checkDigit, type, dayName }
+
+    // Validate all rows first
+    for (const d of rangeDays) {
+      const key = d.toISOString().split("T")[0];
+      const entry = rangeData[key] || { result: "", type: "Open" };
+      const raw = (entry.result || "").trim();
+
+      const validation = validateRangeEntry(raw);
+      if (!validation.ok) {
+        errors[key] = validation.msg;
+        continue;
+      }
+
+      // get mainDigits and providedCheck
+      const mainDigits = validation.mainDigits;
+      const providedCheck = validation.providedCheck;
+
+      // compute check digit
+      const computedCheck = computeCheckDigitFromDigits(mainDigits);
+      const finalCheck =
+        providedCheck !== null ? String(providedCheck) : String(computedCheck);
+
+      // sanity for type
+      const type = entry.type === "Close" ? "Close" : "Open";
+      const dayName = d.toLocaleDateString("en-US", { weekday: "long" });
+
+      preparedRows.push({
+        key,
+        date: d,
+        mainDigits,
+        checkDigit: finalCheck,
+        type,
+        dayName,
+      });
+    }
+
+    // If any validation errors — show them and abort
+    if (Object.keys(errors).length > 0) {
+      setRangeErrors(errors);
+      // show a toast summary too
+      const firstKey = Object.keys(errors)[0];
+      toast.error(`Validation failed for ${firstKey}: ${errors[firstKey]}`);
+      return;
+    } else {
+      setRangeErrors({});
+    }
+
+    // All rows valid — send them one by one to backend (mirroring your backend expectation)
+    try {
+      for (const r of preparedRows) {
+        const payloadArray = [
+          r.mainDigits,
+          r.checkDigit,
+          r.date.toISOString(),
+          r.type,
+          r.dayName,
+        ];
+
+        const response = await api(`/AllGames/updateGame/${rangeGameId}`, {
+          method: "PUT",
+          body: JSON.stringify({ resultNo: payloadArray }),
+        });
+
+        if (!response || !response.success) {
+          throw new Error(
+            response?.message || "Failed to save one of the days"
+          );
+        }
+      }
+
+      toast.success("All range results saved");
+      // reset UI
+      setShowRangeModal(false);
+      setRangeStart("");
+      setRangeEnd("");
+      setRangeDays([]);
+      setRangeData({});
+      setRangeGameId("");
+      setRangeErrors({});
+      fetchGamesAgain();
+    } catch (err) {
+      console.error("Error saving range results:", err);
+      toast.error("Error saving range results: " + (err.message || err));
     }
   };
 
@@ -606,6 +757,83 @@ export default function JodiPannelResultSection() {
     return "No numbers";
   };
 
+  const canEditGame = (game, role, username) => {
+    if (role === "Admin") return true;
+    return game.owner === username;
+  };
+
+  // Normalize digits-only main number from the user input (remove non-digits)
+  const digitsOnly = (s = "") => (s ? s.toString().replace(/[^0-9]/g, "") : "");
+
+  // compute check digit same as backend: sum of last 3 digits % 10
+  const computeCheckDigitFromDigits = (digitsStr) => {
+    if (!digitsStr) return 0;
+    const arr = digitsStr
+      .slice(-3)
+      .split("")
+      .map((c) => parseInt(c || "0", 10));
+    const sum = arr.reduce((a, b) => a + (isNaN(b) ? 0 : b), 0);
+    return sum % 10;
+  };
+
+  // Validate a single user-entered string for a date.
+  // Accepts formats like "111", "111-3", or "111-22-333" (we only consider digits)
+  function validateRangeEntry(rawStr) {
+    if (!rawStr || typeof rawStr !== "string") {
+      return { ok: false, msg: "Empty value" };
+    }
+
+    // If user provided a check-digit explicitly like "123-4", capture it
+    // We'll treat the last hyphen-separated part as possible check digit only if it's a single digit.
+    const parts = rawStr
+      .split("-")
+      .map((p) => p.trim())
+      .filter(Boolean);
+    let providedCheck = null;
+    if (parts.length >= 2 && /^[0-9]$/.test(parts[parts.length - 1])) {
+      providedCheck = parts[parts.length - 1];
+      // main part is everything except last hyphen-piece
+      parts.pop();
+    }
+
+    // Now join remaining parts to build the main number (still may contain internal hyphens, but we'll strip non-digits)
+    const mainCandidate = parts.join("");
+    const mainDigits = digitsOnly(mainCandidate);
+
+    if (!/^\d+$/.test(mainDigits) || mainDigits.length === 0) {
+      return { ok: false, msg: "Result must contain digits" };
+    }
+
+    // If length >= 2: first < second (backend checks first >= second -> invalid)
+    if (mainDigits.length >= 2) {
+      const first = parseInt(mainDigits[0], 10);
+      const second = parseInt(mainDigits[1], 10);
+      if (first >= second) {
+        return {
+          ok: false,
+          msg: "Invalid number: first digit must be smaller than second digit",
+        };
+      }
+    }
+
+    // If length >= 3: check-digit logic
+    if (mainDigits.length >= 3) {
+      const expected = computeCheckDigitFromDigits(mainDigits);
+      if (providedCheck !== null) {
+        if (parseInt(providedCheck, 10) !== expected) {
+          return {
+            ok: false,
+            msg: `Invalid check digit: expected ${expected}`,
+          };
+        }
+      }
+      // if providedCheck == null it's fine — we'll send computed check digit later
+    }
+
+    // all good
+    return { ok: true, mainDigits, providedCheck };
+  }
+
   const handlePageChange = (game, value) => {
     if (value !== "panel") {
       navigate(`/JodiPanPage/${game._id}`);
@@ -632,6 +860,12 @@ export default function JodiPannelResultSection() {
             }}
           >
             ADD GAME
+          </button>
+          <button
+            className="btn btn-dark m-1"
+            onClick={() => setShowRangeModal(true)}
+          >
+            ADD RANGE RESULT
           </button>
           <button
             className="btn btn-secondary m-1"
@@ -672,6 +906,18 @@ export default function JodiPannelResultSection() {
         </div>
       )}
 
+      {role === "Agent" && (
+        <div className="mb-3">
+          <button
+            className="btn btn-dark m-1"
+            onClick={() => setShowRangeModal(true)}
+          >
+            ADD RANGE RESULT
+          </button>
+        </div>
+      )}
+
+      {/* If the role is neither "Admin" nor "Agent", nothing will be rendered here. */}
       {sortedGames
         // Filter logic: Admin sees all, User/Agent only see active
         .filter((item) => {
@@ -831,6 +1077,7 @@ export default function JodiPannelResultSection() {
                   >
                     EDIT
                   </button>
+
                   <button
                     className={`btn m-1 ${
                       item.status === "Active" ? "btn-success" : "btn-danger"
@@ -1371,6 +1618,119 @@ export default function JodiPannelResultSection() {
                 </button>
               </form>
             )}
+          </div>
+        </div>
+      )}
+
+      {showRangeModal && (
+        <div className="AddGameModelMainContainer">
+          <div className="AddGameModelSeconContainer">
+            <h3>Add Range Results</h3>
+
+            {/* Select Game */}
+            <label>Select Game</label>
+            <select
+              className="form-control"
+              value={rangeGameId}
+              onChange={(e) => setRangeGameId(e.target.value)}
+            >
+              <option value="">-- Select Game --</option>
+              {games
+                .filter((g) => role === "Admin" || g.owner === username)
+                .map((g) => (
+                  <option key={g._id} value={g._id}>
+                    {g.name}
+                  </option>
+                ))}
+            </select>
+
+            {/* Start & End Date */}
+            <label>Start Date</label>
+            <input
+              type="date"
+              className="form-control"
+              value={rangeStart}
+              onChange={(e) => setRangeStart(e.target.value)}
+            />
+
+            <label>End Date</label>
+            <input
+              type="date"
+              className="form-control"
+              value={rangeEnd}
+              onChange={(e) => setRangeEnd(e.target.value)}
+            />
+
+            {/* Generated Inputs */}
+            <div style={{ maxHeight: "300px", overflowY: "auto" }}>
+              {rangeDays.map((d) => {
+                const key = d.toISOString().split("T")[0];
+                const row = rangeData[key] || { result: "", type: "Open" };
+                return (
+                  <div
+                    key={key}
+                    style={{
+                      display: "flex",
+                      gap: 8,
+                      alignItems: "center",
+                      marginBottom: 8,
+                    }}
+                  >
+                    <div style={{ minWidth: 220 }}>
+                      {key} (
+                      {d.toLocaleDateString("en-US", { weekday: "long" })})
+                    </div>
+
+                    <input
+                      type="text"
+                      maxLength={5} // <-- only 5 characters allowed
+                      pattern="\d{3}-\d{1}" // <-- must match 123-4 format
+                      placeholder="111-3"
+                      value={row.result}
+                      onChange={(e) =>
+                        setRangeData({
+                          ...rangeData,
+                          [key]: { ...row, result: e.target.value },
+                        })
+                      }
+                    />
+
+                    <select
+                      value={row.type || "Open"}
+                      onChange={(e) =>
+                        setRangeData({
+                          ...rangeData,
+                          [key]: { ...row, type: e.target.value },
+                        })
+                      }
+                    >
+                      <option value="Open">Open</option>
+                      <option value="Close">Close</option>
+                    </select>
+
+                    {/* Inline error for this row */}
+                    {rangeErrors[key] && (
+                      <div style={{ color: "red", marginLeft: 8 }}>
+                        {rangeErrors[key]}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            <button
+              className="btn btn-success mt-3"
+              onClick={handleSaveRangeResults}
+            >
+              Save All
+            </button>
+            <button
+              className="btn btn-secondary mt-3 ms-2"
+              onClick={() => setShowRangeModal(false)}
+            >
+              Cancel
+            </button>
           </div>
         </div>
       )}

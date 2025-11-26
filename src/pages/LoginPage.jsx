@@ -38,7 +38,6 @@ const LoginPage = () => {
 
       if (data.success) {
         localStorage.setItem("authToken", data.token);
-        localStorage.setItem("userRole", data.role);
 
         toast.success("Login successful!");
         setIsLoggedIn(true);
