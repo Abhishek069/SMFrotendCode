@@ -5,6 +5,7 @@ import { useParams } from "react-router-dom";
 import { api } from "../lib/api";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { jwtDecode } from "jwt-decode";
 
 const JodiPanPage = () => {
   // Initialize with an empty object to prevent errors when trying to access properties
@@ -13,7 +14,17 @@ const JodiPanPage = () => {
   const [error, setError] = useState(null);
   const [jsonFile, setJsonFile] = useState(null);
 
-  const userRole = localStorage.getItem("role");
+  const token = localStorage.getItem("authToken");
+  let userRole = null;
+
+  if (token) {
+    try {
+      const decoded = jwtDecode(token);
+      userRole = decoded.role;
+    } catch (err) {
+      console.error("Invalid token", err);
+    }
+  }
 
   const { id } = useParams(); // This correctly gets the game ID from the URL
 
@@ -116,7 +127,7 @@ const JodiPanPage = () => {
       <Header />
       <div
         className="border m-1 border-danger text-center py-2"
-        style={{ "background-color": "Pink" }}
+        style={{ background: "Pink" }}
       >
         <h3>{singleGameData.name} JODI CHART</h3>
       </div>
@@ -125,7 +136,7 @@ const JodiPanPage = () => {
       </div>
       <div
         className="border m-1 border-danger text-center py-2"
-        style={{ "background-color": "Pink" }}
+        style={{ backgroundColor: "Pink" }}
       >
         <h3>{singleGameData.name} JODI CHART</h3>
       </div>
@@ -156,7 +167,7 @@ const JodiPanPage = () => {
 
       <div
         className="border m-1 border-danger text-center py-2"
-        style={{ "background-color": "Pink" }}
+        style={{ backgroundColor: "Pink" }}
       >
         <h3>{singleGameData.name}</h3>
         <h3>
@@ -179,7 +190,7 @@ const JodiPanPage = () => {
       />
       <div
         className="border m-1 border-danger text-center py-2"
-        style={{ "background-color": "Pink" }}
+        style={{ backgroundColor: "Pink" }}
       >
         <h3>{singleGameData.name}</h3>
         <h3>
