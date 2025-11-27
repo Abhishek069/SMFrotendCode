@@ -114,7 +114,7 @@ const PanelPage = () => {
       </div>
       {/* Pass the grouped data to the MatkaTable component */}
       {console.log(groupedByDay, singleGameData.name, groupedByDayOpen, "hello")}
-      <PanelMatkaTable groupedData={groupedByDay} gameName={singleGameData.name} baseDateFromData= {singleGameData.closeNo[0][2].split('T')[0]}  groupedByDayOpen={groupedByDayOpen}/>
+      <PanelMatkaTable groupedData={groupedByDay} gameName={singleGameData.name} baseDateFromData= {singleGameData.closeNo.at(-1)[2].split('T')[0]}  groupedByDayOpen={groupedByDayOpen}/>
       <div
         className="border m-1 border-danger text-center py-2"
         style={{ "backgroundColor": "Pink" }}
