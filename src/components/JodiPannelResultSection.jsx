@@ -144,6 +144,8 @@ export default function JodiPannelResultSection() {
   // errors for each date key, e.g. { "2025-01-25": "message" }
   const [rangeErrors, setRangeErrors] = useState({});
 
+  const rangeGame = games.find((g) => g._id === rangeGameId);
+
   // console.log(nowDateAndTime);
 
   // 🔹 Handlers
@@ -240,20 +242,31 @@ export default function JodiPannelResultSection() {
 
   // ⭐ Auto-update list whenever start or end changes
   useEffect(() => {
-    if (rangeStart && rangeEnd) {
+    if (rangeStart && rangeEnd && rangeGame) {
       const days = getDatesBetween(rangeStart, rangeEnd);
       setRangeDays(days);
 
-      // Create input controls
       const obj = {};
+
       days.forEach((d) => {
         const key = d.toISOString().split("T")[0];
-        obj[key] = { result: "", type: "Open" };
+
+        // find existing values
+        const openVal = findResultForDate(rangeGame.openNo || [], key);
+        const closeVal = findResultForDate(rangeGame.closeNo || [], key);
+
+        // If both exist → show 2 separate entries
+        // but your UI has one input per day
+        // so we store whichever the user selects
+        obj[key] = {
+          result: openVal || closeVal || "",
+          type: openVal ? "Open" : closeVal ? "Close" : "Open",
+        };
       });
 
       setRangeData(obj);
     }
-  }, [rangeStart, rangeEnd]);
+  }, [rangeStart, rangeEnd, rangeGame]);
 
   // ⭐ Compute check digit (sum last 3 digits % 10)
   const computeCheckDigit = (num) => {
@@ -715,15 +728,18 @@ export default function JodiPannelResultSection() {
     return hours >= 24;
   }
 
+  function getLatestEntry(arr) {
+    if (!Array.isArray(arr) || arr.length === 0) return null;
+
+    // Sort by date field at index 2
+    const sorted = [...arr].sort((a, b) => new Date(b[2]) - new Date(a[2]));
+
+    return sorted[0]; // latest
+  }
+
   const getDisplayResult = (item) => {
-    const lastOpen =
-      Array.isArray(item.openNo) && item.openNo.length > 0
-        ? item.openNo[item.openNo.length - 1]
-        : null;
-    const lastClose =
-      Array.isArray(item.closeNo) && item.closeNo.length > 0
-        ? item.closeNo[item.closeNo.length - 1]
-        : null;
+    const lastOpen = getLatestEntry(item.openNo);
+    const lastClose = getLatestEntry(item.closeNo);
 
     if (!lastOpen && !lastClose) return "No numbers";
 
@@ -737,11 +753,12 @@ export default function JodiPannelResultSection() {
     const closeTime = lastClose?.[2] || "";
     const closeDay = lastClose?.[4] || "";
 
+    // If same date and same day, show combined
     if (
       lastOpen &&
       lastClose &&
       openDay === closeDay &&
-      lastOpen[2].split("T")[0] === lastClose[2].split("T")[0]
+      openTime.split("T")[0] === closeTime.split("T")[0]
     ) {
       return `${openMain}-${openDigit}${closeDigit}-${closeMain}`;
     }
@@ -760,6 +777,13 @@ export default function JodiPannelResultSection() {
   const canEditGame = (game, role, username) => {
     if (role === "Admin") return true;
     return game.owner === username;
+  };
+
+  const findResultForDate = (list, dateKey) => {
+    // dateKey = "2025-01-25"
+    const match = list.find((entry) => entry[2].slice(0, 10) === dateKey);
+    if (!match) return null;
+    return match[0] + "-" + match[1]; // example: "123-4"
   };
 
   // Normalize digits-only main number from the user input (remove non-digits)
@@ -808,7 +832,9 @@ export default function JodiPannelResultSection() {
     if (mainDigits.length >= 2) {
       const first = parseInt(mainDigits[0], 10);
       const second = parseInt(mainDigits[1], 10);
-      if (first >= second) {
+      console.log(first, second);
+      
+      if (first > second) {
         return {
           ok: false,
           msg: "Invalid number: first digit must be smaller than second digit",
@@ -1058,7 +1084,7 @@ export default function JodiPannelResultSection() {
                     fontSize: "28px",
                   }}
                 >
-                  {isOlderThan12Hours(item.updatedAt)
+                  {isOlderThan12Hours(item.openNo.at(-1)?.[2])
                     ? "***-**-***"
                     : displayResult}
                 </h5>
