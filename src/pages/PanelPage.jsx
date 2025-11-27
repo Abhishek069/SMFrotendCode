@@ -31,17 +31,18 @@ const PanelPage = () => {
       setLoading(false);
     }
   };
-
+  
+  
   useEffect(() => {
     if (id) { // Only fetch if an ID is present
       fetchSingleGameData();
     }
   }, [id]); // Rerun effect if the URL ID changes
-
+  
   if (loading) {
     return <div>Loading game data...</div>;
   }
-
+  
   if (error) {
     return <div>Error: {error}</div>;
   }
@@ -49,10 +50,11 @@ const PanelPage = () => {
   // Grouping the result data by day.
   // This will create an object like:
   // {
-  //   "Monday": [ ["123", "45", "678"], ... ],
-  //   "Tuesday": [ ["987", "65", "432"], ... ]
-  // }
-  const groupedByDay = (singleGameData.closeNo || []).reduce((acc, item) => {
+    //   "Monday": [ ["123", "45", "678"], ... ],
+    //   "Tuesday": [ ["987", "65", "432"], ... ]
+    // }
+    console.log(singleGameData.closeNo[0][2].split('T')[0],"One Done Boy");
+    const groupedByDay = (singleGameData.closeNo || []).reduce((acc, item) => {
     // Ensure the item is an array and has at least 4 elements (3 numbers + 1 day)
     if (Array.isArray(item) && item.length >= 4) {
       const day = item[item.length - 1];
@@ -111,7 +113,8 @@ const PanelPage = () => {
         </h3>
       </div>
       {/* Pass the grouped data to the MatkaTable component */}
-      <PanelMatkaTable groupedData={groupedByDay} gameName={singleGameData.name}  groupedByDayOpen={groupedByDayOpen}/>
+      {console.log(groupedByDay, singleGameData.name, groupedByDayOpen, "hello")}
+      <PanelMatkaTable groupedData={groupedByDay} gameName={singleGameData.name} baseDateFromData= {singleGameData.closeNo[0][2].split('T')[0]}  groupedByDayOpen={groupedByDayOpen}/>
       <div
         className="border m-1 border-danger text-center py-2"
         style={{ "backgroundColor": "Pink" }}
