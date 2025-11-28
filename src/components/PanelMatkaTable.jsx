@@ -1,10 +1,12 @@
 import React from "react";
 import "./Comman.css";
 
-// A cleaner, more compact, and well‑aligned table UI
-export default function PanelMatkaTable({ groupedData, baseDateFromData, gameName, groupedByDayOpen }) {
-  console.log(groupedData,baseDateFromData, gameName, groupedByDayOpen, "hello");
-  
+export default function PanelMatkaTable({
+  groupedData = {},
+  groupedByDayOpen = {},
+  baseDateFromData,
+  gameName = "",
+}) {
   const headers = ["Week", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
   const dayMap = {
@@ -17,11 +19,6 @@ export default function PanelMatkaTable({ groupedData, baseDateFromData, gameNam
     Sunday: "Sun",
   };
 
-  const maxRows = Math.max(
-    ...Object.values(groupedData).map((arr) => arr.length),
-    ...Object.values(groupedByDayOpen).map((arr) => arr.length)
-  );
-
   const baseDate = new Date(baseDateFromData);
 
   const formatDate = (date) => {
@@ -31,31 +28,117 @@ export default function PanelMatkaTable({ groupedData, baseDateFromData, gameNam
     return `${d}-${m}-${y}`;
   };
 
-  const data = Array.from({ length: maxRows }, (_, rowIndex) => {
+  // ------------------------------
+  // WEEK INDEX CALCULATOR
+  // ------------------------------
+  const getWeekIndex = (entryDate, baseDate) => {
+    const msPerDay = 24 * 60 * 60 * 1000;
+    const diff = (entryDate - baseDate) / msPerDay;
+    return Math.floor(diff / 7);
+  };
+
+  // ------------------------------
+  // BUILD weekData = { weekIndex: { Monday:{open,close}, Tuesday:{}, ... } }
+  // ------------------------------
+  const weekData = {};
+
+  // OPEN DATA
+  Object.keys(groupedByDayOpen).forEach((day) => {
+    (groupedByDayOpen[day] || []).forEach((entry) => {
+      const date = new Date(entry[2]); // "2025-11-25T00:00:00.000Z"
+      const weekIndex = getWeekIndex(date, baseDate);
+
+      if (!weekData[weekIndex]) weekData[weekIndex] = {};
+      if (!weekData[weekIndex][day]) weekData[weekIndex][day] = {};
+
+      weekData[weekIndex][day].open = entry;
+    });
+  });
+
+  // CLOSE DATA
+  Object.keys(groupedData).forEach((day) => {
+    (groupedData[day] || []).forEach((entry) => {
+      const date = new Date(entry[2]);
+      const weekIndex = getWeekIndex(date, baseDate);
+
+      if (!weekData[weekIndex]) weekData[weekIndex] = {};
+      if (!weekData[weekIndex][day]) weekData[weekIndex][day] = {};
+
+      weekData[weekIndex][day].close = entry;
+    });
+  });
+
+  // ------------------------------
+  // SORT week indexes in ASC (week 0, week 1, week 2…)
+  // ------------------------------
+  // const weekIndexes = Object.keys(weekData)
+  //   .map((x) => Number(x))
+  //   .sort((a, b) => a - b);
+  // GET ALL week indexes from weekData
+  const existingWeekIndexes = Object.keys(weekData)
+    .map((n) => Number(n))
+    .sort((a, b) => a - b);
+
+  // Find minimum and maximum week indexes
+  const minWeek = existingWeekIndexes[0];
+  const maxWeek = existingWeekIndexes[existingWeekIndexes.length - 1];
+
+  // Build continuous weeks list (fills missing weeks)
+  const weekIndexes = [];
+  for (let w = minWeek; w <= maxWeek; w++) {
+    weekIndexes.push(w);
+  }
+
+  // ------------------------------
+  // BUILD FINAL TABLE ROWS
+  // ------------------------------
+  const data = weekIndexes.map((weekIndex) => {
     const startOfWeek = new Date(baseDate);
-    startOfWeek.setDate(baseDate.getDate() + rowIndex * 7);
+    startOfWeek.setDate(baseDate.getDate() + weekIndex * 7);
 
     const endOfWeek = new Date(startOfWeek);
     endOfWeek.setDate(startOfWeek.getDate() + 6);
 
-    const weekRange = `${formatDate(startOfWeek)} → ${formatDate(endOfWeek)}`;
+    const weekStartStr = formatDate(startOfWeek);
+    const weekEndStr = formatDate(endOfWeek);
 
+    // const rowData = Object.values(dayMap).map((shortDay) => {
+    //   const fullDay = Object.keys(dayMap).find(
+    //     (key) => dayMap[key] === shortDay
+    //   );
+
+    //   const openData = weekData[weekIndex][fullDay]?.open || ["", "", ""];
+    //   const closeData = weekData[weekIndex][fullDay]?.close || ["", "", ""];
+
+    //   const jodi =
+    //     openData[1] && closeData[1] ? `${openData[1]}${closeData[1]}` : "";
+
+    //   return {
+    //     openPanel: openData,
+    //     jodi,
+    //     closePanel: closeData,
+    //   };
+    // });
     const rowData = Object.values(dayMap).map((shortDay) => {
-      const fullDay = Object.keys(dayMap).find((key) => dayMap[key] === shortDay);
+      const fullDay = Object.keys(dayMap).find((k) => dayMap[k] === shortDay);
 
-      const openData = groupedByDayOpen[fullDay]?.[rowIndex] || ["", "", ""];
-      const closeData = groupedData[fullDay]?.[rowIndex] || ["", "", ""];
+      const weekEntry = weekData[weekIndex] || {}; // <-- FIX
+      const dayEntry = weekEntry[fullDay] || {}; // <-- FIX
 
-      const combinedJodi = openData[1] && closeData[1] ? `${openData[1]}${closeData[1]}` : "";
+      const openData = dayEntry.open || ["", "", ""];
+      const closeData = dayEntry.close || ["", "", ""];
+
+      const jodi =
+        openData[1] && closeData[1] ? `${openData[1]}${closeData[1]}` : "";
 
       return {
         openPanel: openData,
-        jodi: combinedJodi,
+        jodi,
         closePanel: closeData,
       };
     });
 
-    return { weekRange, rowData };
+    return { weekStartStr, weekEndStr, rowData };
   });
 
   const redNumbers = ["44", "50", "38", "99", "61", "05", "77", "88", "66"];
@@ -74,7 +157,9 @@ export default function PanelMatkaTable({ groupedData, baseDateFromData, gameNam
             </tr>
             <tr>
               {headers.map((day) => (
-                <th key={day} className="day compact-day">{day}</th>
+                <th key={day} className="day compact-day">
+                  {day}
+                </th>
               ))}
             </tr>
           </thead>
@@ -82,46 +167,71 @@ export default function PanelMatkaTable({ groupedData, baseDateFromData, gameNam
           <tbody>
             {data.map((row, rowIndex) => (
               <tr key={rowIndex}>
-                <td className="week-cell" style={{ textAlign: "center", padding: "6px 4px", lineHeight: "1.2" }}>
-  <div style={{ fontSize: "11px", fontWeight: "600" }}>
-    {row.weekRange.split(",")[0]}
-  </div>
-  <div style={{ fontSize: "10px", opacity: 0.8 }}>to</div>
-  <div style={{ fontSize: "11px", fontWeight: "600" }}>
-    {row.weekRange.split(",")[1]}
-  </div>
-</td>
+                {/* WEEK RANGE */}
+                <td
+                  className="week-cell"
+                  style={{
+                    textAlign: "center",
+                    padding: "6px 4px",
+                    lineHeight: "1.2",
+                  }}
+                >
+                  <div style={{ fontSize: "11px", fontWeight: "600" }}>
+                    {row.weekStartStr}
+                  </div>
+                  <div style={{ fontSize: "10px", opacity: 0.8 }}>to</div>
+                  <div style={{ fontSize: "11px", fontWeight: "600" }}>
+                    {row.weekEndStr}
+                  </div>
+                </td>
 
-                {row.rowData.map(({ openPanel, jodi, closePanel }, colIndex) => (
-                  <td key={colIndex} className="cell" style={{ padding: "4px", textAlign: "center", verticalAlign: "middle" }} >
-                    {openPanel[0] && closePanel[0] ? (
-                      <div className="data-of-jodi-open-close compact-data-box">
+                {/* DAY CELLS */}
+                {row.rowData.map(
+                  ({ openPanel, jodi, closePanel }, colIndex) => (
+                    <td
+                      key={colIndex}
+                      className="cell"
+                      style={{
+                        padding: "4px",
+                        textAlign: "center",
+                        verticalAlign: "middle",
+                      }}
+                    >
+                      {openPanel[0] && closePanel[0] ? (
+                        <div className="data-of-jodi-open-close compact-data-box">
+                          {/* Open Panel */}
+                          <div className="small-panel compact-panel">
+                            {String(openPanel[0])
+                              .split("")
+                              .map((d, i) => (
+                                <span key={i}>{d}</span>
+                              ))}
+                          </div>
 
-                        {/* Open Panel */}
-                        <div className="small-panel compact-panel">
-                          {openPanel[0].split("").map((d, i) => (
-                            <span key={i}>{d}</span>
-                          ))}
+                          {/* Jodi */}
+                          <div
+                            className={`big-jodi compact-jodi ${
+                              redNumbers.includes(jodi) ? "red" : ""
+                            }`}
+                          >
+                            <span>{jodi || "-"}</span>
+                          </div>
+
+                          {/* Close Panel */}
+                          <div className="small-panel compact-panel">
+                            {String(closePanel[0])
+                              .split("")
+                              .map((d, i) => (
+                                <span key={i}>{d}</span>
+                              ))}
+                          </div>
                         </div>
-
-                        {/* Jodi */}
-                        <div className={`big-jodi compact-jodi ${redNumbers.includes(jodi) ? "red" : ""}`}>
-                          <span>{jodi || "-"}</span>
-                        </div>
-
-                        {/* Close Panel */}
-                        <div className="small-panel compact-panel">
-                          {closePanel[0].split("").map((d, i) => (
-                            <span key={i}>{d}</span>
-                          ))}
-                        </div>
-
-                      </div>
-                    ) : (
-                      <div className="empty-slot">-</div>
-                    )}
-                  </td>
-                ))}
+                      ) : (
+                        <div className="empty-slot">-</div>
+                      )}
+                    </td>
+                  )
+                )}
               </tr>
             ))}
           </tbody>
