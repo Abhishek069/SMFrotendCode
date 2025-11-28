@@ -247,6 +247,7 @@ export default function JodiPannelResultSection() {
       setRangeDays(days);
 
       const obj = {};
+      console.log(days);
 
       days.forEach((d) => {
         const key = d.toISOString().split("T")[0];
@@ -258,11 +259,18 @@ export default function JodiPannelResultSection() {
         // If both exist → show 2 separate entries
         // but your UI has one input per day
         // so we store whichever the user selects
+        console.log();
+
         obj[key] = {
-          result: openVal || closeVal || "",
+          result: {
+            open: openVal || "",
+            close: closeVal || "",
+          },
           type: openVal ? "Open" : closeVal ? "Close" : "Open",
         };
       });
+
+      console.log(obj);
 
       setRangeData(obj);
     }
@@ -277,6 +285,103 @@ export default function JodiPannelResultSection() {
   };
 
   // ⭐ Save range results (multiple days)
+  // const handleSaveRangeResults = async () => {
+  //   if (!rangeGameId) {
+  //     toast.error("Please select a game");
+  //     return;
+  //   }
+  //   if (!rangeDays || rangeDays.length === 0) {
+  //     toast.error("Please select a date range");
+  //     return;
+  //   }
+
+  //   const errors = {};
+  //   const preparedRows = []; // { key, date, mainDigits, checkDigit, type, dayName }
+
+  //   // Validate all rows first
+  //   for (const d of rangeDays) {
+  //     const key = d.toISOString().split("T")[0];
+  //     const entry = rangeData[key] || { result: "", type: "Open" };
+  //     const raw = (entry.result || "").trim();
+
+  //     const validation = validateRangeEntry(raw);
+  //     if (!validation.ok) {
+  //       errors[key] = validation.msg;
+  //       continue;
+  //     }
+
+  //     // get mainDigits and providedCheck
+  //     const mainDigits = validation.mainDigits;
+  //     const providedCheck = validation.providedCheck;
+
+  //     // compute check digit
+  //     const computedCheck = computeCheckDigitFromDigits(mainDigits);
+  //     const finalCheck =
+  //       providedCheck !== null ? String(providedCheck) : String(computedCheck);
+
+  //     // sanity for type
+  //     const type = entry.type === "Close" ? "Close" : "Open";
+  //     const dayName = d.toLocaleDateString("en-US", { weekday: "long" });
+
+  //     preparedRows.push({
+  //       key,
+  //       date: d,
+  //       mainDigits,
+  //       checkDigit: finalCheck,
+  //       type,
+  //       dayName,
+  //     });
+  //   }
+
+  //   // If any validation errors — show them and abort
+  //   if (Object.keys(errors).length > 0) {
+  //     setRangeErrors(errors);
+  //     // show a toast summary too
+  //     const firstKey = Object.keys(errors)[0];
+  //     toast.error(`Validation failed for ${firstKey}: ${errors[firstKey]}`);
+  //     return;
+  //   } else {
+  //     setRangeErrors({});
+  //   }
+
+  //   // All rows valid — send them one by one to backend (mirroring your backend expectation)
+  //   try {
+  //     for (const r of preparedRows) {
+  //       const payloadArray = [
+  //         r.mainDigits,
+  //         r.checkDigit,
+  //         r.date.toISOString(),
+  //         r.type,
+  //         r.dayName,
+  //       ];
+
+  //       const response = await api(`/AllGames/updateGame/${rangeGameId}`, {
+  //         method: "PUT",
+  //         body: JSON.stringify({ resultNo: payloadArray }),
+  //       });
+
+  //       if (!response || !response.success) {
+  //         throw new Error(
+  //           response?.message || "Failed to save one of the days"
+  //         );
+  //       }
+  //     }
+
+  //     toast.success("All range results saved");
+  //     // reset UI
+  //     // setShowRangeModal(false);
+  //     // setRangeStart("");
+  //     // setRangeEnd("");
+  //     // setRangeDays([]);
+  //     // setRangeData({});
+  //     // setRangeGameId("");
+  //     // setRangeErrors({});
+  //     fetchGamesAgain();
+  //   } catch (err) {
+  //     console.error("Error saving range results:", err);
+  //     toast.error("Error saving range results: " + (err.message || err));
+  //   }
+  // };
   const handleSaveRangeResults = async () => {
     if (!rangeGameId) {
       toast.error("Please select a game");
@@ -288,13 +393,19 @@ export default function JodiPannelResultSection() {
     }
 
     const errors = {};
-    const preparedRows = []; // { key, date, mainDigits, checkDigit, type, dayName }
+    const preparedRows = [];
 
-    // Validate all rows first
     for (const d of rangeDays) {
       const key = d.toISOString().split("T")[0];
-      const entry = rangeData[key] || { result: "", type: "Open" };
-      const raw = (entry.result || "").trim();
+      const entry = rangeData[key] || {
+        result: { open: "", close: "" },
+        type: "Open",
+      };
+
+      const raw =
+        entry.type === "Open"
+          ? (entry.result.open || "").trim()
+          : (entry.result.close || "").trim();
 
       const validation = validateRangeEntry(raw);
       if (!validation.ok) {
@@ -302,16 +413,12 @@ export default function JodiPannelResultSection() {
         continue;
       }
 
-      // get mainDigits and providedCheck
       const mainDigits = validation.mainDigits;
       const providedCheck = validation.providedCheck;
 
-      // compute check digit
       const computedCheck = computeCheckDigitFromDigits(mainDigits);
-      const finalCheck =
-        providedCheck !== null ? String(providedCheck) : String(computedCheck);
+      const finalCheck = providedCheck !== null ? providedCheck : computedCheck;
 
-      // sanity for type
       const type = entry.type === "Close" ? "Close" : "Open";
       const dayName = d.toLocaleDateString("en-US", { weekday: "long" });
 
@@ -325,18 +432,15 @@ export default function JodiPannelResultSection() {
       });
     }
 
-    // If any validation errors — show them and abort
     if (Object.keys(errors).length > 0) {
       setRangeErrors(errors);
-      // show a toast summary too
       const firstKey = Object.keys(errors)[0];
       toast.error(`Validation failed for ${firstKey}: ${errors[firstKey]}`);
       return;
-    } else {
-      setRangeErrors({});
     }
 
-    // All rows valid — send them one by one to backend (mirroring your backend expectation)
+    setRangeErrors({});
+
     try {
       for (const r of preparedRows) {
         const payloadArray = [
@@ -352,22 +456,14 @@ export default function JodiPannelResultSection() {
           body: JSON.stringify({ resultNo: payloadArray }),
         });
 
-        if (!response || !response.success) {
-          throw new Error(
-            response?.message || "Failed to save one of the days"
-          );
+        if (!response.success) {
+          throw new Error(response.message || "Failed to save");
         }
       }
 
       toast.success("All range results saved");
-      // reset UI
-      setShowRangeModal(false);
-      setRangeStart("");
-      setRangeEnd("");
-      setRangeDays([]);
-      setRangeData({});
-      setRangeGameId("");
-      setRangeErrors({});
+
+      // 🔥 keep modal open, do not reset fields
       fetchGamesAgain();
     } catch (err) {
       console.error("Error saving range results:", err);
@@ -586,7 +682,7 @@ export default function JodiPannelResultSection() {
 
         if (updateData.success) {
           fetchGamesAgain();
-          setShowEditModal(false);
+          // setShowEditModal(false);
           toast.success("Game colors updated successfully!");
         } else {
           toast.error("Failed to update colors: " + updateData.message);
@@ -833,7 +929,7 @@ export default function JodiPannelResultSection() {
       const first = parseInt(mainDigits[0], 10);
       const second = parseInt(mainDigits[1], 10);
       console.log(first, second);
-      
+
       if (first > second) {
         return {
           ok: false,
@@ -1709,14 +1805,22 @@ export default function JodiPannelResultSection() {
 
                     <input
                       type="text"
-                      maxLength={5} // <-- only 5 characters allowed
-                      pattern="\d{3}-\d{1}" // <-- must match 123-4 format
+                      maxLength={5}
                       placeholder="111-3"
-                      value={row.result}
+                      value={
+                        row.type === "Open" ? row.result.open : row.result.close
+                      }
                       onChange={(e) =>
                         setRangeData({
                           ...rangeData,
-                          [key]: { ...row, result: e.target.value },
+                          [key]: {
+                            ...row,
+                            result: {
+                              ...row.result,
+                              [row.type === "Open" ? "open" : "close"]:
+                                e.target.value,
+                            },
+                          },
                         })
                       }
                     />

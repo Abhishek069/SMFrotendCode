@@ -123,10 +123,10 @@ const JodiPanPage = () => {
   // The description text now uses the fetched data safely
   const description = `Dpboss ${singleGameData.name} jodi chart, ${singleGameData.name} jodi chart, old ${singleGameData.name} jodi chart, dpboss ${singleGameData.name} chart, ${singleGameData.name} jodi record, ${singleGameData.name}jodi record, ${singleGameData.name} jodi chart 2015, ${singleGameData.name} jodi chart 2012, ${singleGameData.name} jodi chart 2012 to 2023, ${singleGameData.name} final ank, ${singleGameData.name} jodi chart.co, ${singleGameData.name} jodi chart matka, matka jodi chart ${singleGameData.name}, matka ${singleGameData.name} chart, satta ${singleGameData.name} chart jodi, ${singleGameData.name} state chart, ${singleGameData.name} chart result, डीपी बॉस, सट्टा चार्ट, सट्टा मटका जोड़ी चार्ट, सट्टा मटका जोड़ी चार्ट, ${singleGameData.name} मटका जोड़ी चार्ट, सट्टा मटका ${singleGameData.name} चार्ट जोड़ी, ${singleGameData.name} सट्टा चार्ट, ${singleGameData.name} जोड़ी चार्ट`;
   return (
-    <div className="bg-danger border m-1 border-danger text-center py-2">
+    <div className="bg-danger border m-1 border-danger text-center ">
       <Header />
       <div
-        className="border m-1 border-danger text-center py-2"
+        className="border m-1 border-danger text-center "
         style={{ background: "Pink" }}
       >
         <h3>{singleGameData.name} JODI CHART</h3>
@@ -135,7 +135,7 @@ const JodiPanPage = () => {
         <p>{description}</p>
       </div>
       <div
-        className="border m-1 border-danger text-center py-2"
+        className="border m-1 border-danger text-center "
         style={{ backgroundColor: "Pink" }}
       >
         <h3>{singleGameData.name} JODI CHART</h3>
@@ -166,7 +166,7 @@ const JodiPanPage = () => {
       )}
 
       <div
-        className="border m-1 border-danger text-center py-2"
+        className="border m-1 border-danger text-center "
         style={{ backgroundColor: "Pink" }}
       >
         <h3>{singleGameData.name}</h3>
@@ -189,7 +189,7 @@ const JodiPanPage = () => {
         titleNameHeading={singleGameData.name}
       />
       <div
-        className="border m-1 border-danger text-center py-2"
+        className="border m-1 border-danger text-center "
         style={{ backgroundColor: "Pink" }}
       >
         <h3>{singleGameData.name}</h3>
