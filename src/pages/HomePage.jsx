@@ -140,8 +140,8 @@ const HomePage = ({ setGameTitle }) => {
 
       {/* Existing Page Content */}
       <div
-        className="border m-1 border-danger text-center py-2 col-12"
-        style={{ backgroundColor: "#ff2600ff", width: "98%" }}
+        className="border border-danger text-center col-12"
+        style={{ backgroundColor: "#ff2600ff", width: "100%" }}
       >
         {/* Page Sections */}
         <Header />

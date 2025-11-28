@@ -127,7 +127,7 @@ const LoginPage = () => {
               <h3 className="mb-4">You are logged in</h3>
               <button
                 onClick={handleLogout}
-                className="btn btn-danger px-4 py-2"
+                className="btn btn-danger px-4 "
               >
                 Logout
               </button>

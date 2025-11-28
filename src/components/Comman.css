@@ -844,7 +844,6 @@
   background-color: #ffcc99;
   padding: 12px 0;
   border: 2px solid #ffffff;
-  margin: 5px;
   border-radius: 10px;
 }
 
@@ -926,7 +925,7 @@
 .welcome-banner {
   background-color: #ffcc99;
   border: 2px solid white;
-  margin: 6px;
+  margin-top: 3px;
   padding: 14px 10px;
   border-radius: 10px;
   text-align: center;

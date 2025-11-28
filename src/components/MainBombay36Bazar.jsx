@@ -27,7 +27,7 @@ const MainBombay36Bazar = () => {
 
   return (
     <div className="container text-center my-4">
-      <div className="bg-warning py-2 rounded-pill fw-bold d-flex justify-content-between align-items-center px-3">
+      <div className="bg-warning  rounded-pill fw-bold d-flex justify-content-between align-items-center px-3">
         <span>MAIN BOMBAY 36 BAZAR</span>
         <button className="btn btn-dark btn-sm">Chart</button>
       </div>

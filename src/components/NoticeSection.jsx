@@ -4,7 +4,7 @@ import { GoDot } from "react-icons/go";
 export default function NoticeSection() {
   return (
     <div
-      className="border m-1 border-white py-2 text-center noticesection-home-main-container"
+      className="border m-1 border-white  text-center noticesection-home-main-container"
       style={{ backgroundColor: "#ffcc99" }}
     >
       <div

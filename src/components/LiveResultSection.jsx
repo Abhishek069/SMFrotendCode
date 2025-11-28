@@ -130,7 +130,7 @@ const LiveResultSection = () => {
         className="bg-warning border border-white m-1 p-3 Live-Result-section-main-container"
         style={{ backgroundColor: "#ffcc99" }}
       >
-        <div className="bg-pink text-white text-center py-2 mb-4 fw-bold Live-Result-Heading">
+        <div className="bg-pink text-white text-center  mb-4 fw-bold Live-Result-Heading">
           <h2>💥LIVE RESULT💥</h2>
         </div>
         <p className="text-center">Loading results...</p>
