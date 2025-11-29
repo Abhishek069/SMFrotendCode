@@ -474,11 +474,8 @@ export default function JodiPannelResultSection() {
   const handleDeleteGame = async (e) => {
     e.preventDefault();
     try {
-      const data = await api(`/AllGames/deleteGame/${encodeURIComponent(deleteGameName)}`, { method: "DELETE" });
-      console.log(data);
-      
-      if(data.status === 'ok')
-        toast.success("Game deleted successfully!");
+      await api(`/AllGames/deleteGame/${encodeURIComponent(deleteGameName)}`, { method: "DELETE" });
+      toast.success("Game deleted successfully!");
       setShowModal(false);
       fetchGamesAgain();
       setDeleteGameName("");
