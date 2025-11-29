@@ -28,25 +28,39 @@ export default function PanelMatkaTable({
     return `${d}-${m}-${y}`;
   };
 
-  // ------------------------------
+  // -----------------------------------------
   // WEEK INDEX CALCULATOR
-  // ------------------------------
-  const getWeekIndex = (entryDate, baseDate) => {
+  // -----------------------------------------
+  const getWeekIndex = (entryDate, mondayBase) => {
     const msPerDay = 24 * 60 * 60 * 1000;
-    const diff = (entryDate - baseDate) / msPerDay;
+    const diff = (entryDate - mondayBase) / msPerDay;
     return Math.floor(diff / 7);
   };
 
-  // ------------------------------
-  // BUILD weekData = { weekIndex: { Monday:{open,close}, Tuesday:{}, ... } }
-  // ------------------------------
+  // -----------------------------------------
+  // Force any date to Monday
+  // -----------------------------------------
+  const getMonday = (date) => {
+    const d = new Date(date);
+    const day = d.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
+    const diff = day === 0 ? -6 : 1 - day; 
+    d.setDate(d.getDate() + diff);
+    return d;
+  };
+
+  // **We convert baseDate to Monday reference**
+  const mondayBaseDate = getMonday(baseDate);
+
+  // -----------------------------------------
+  // BUILD weekData
+  // -----------------------------------------
   const weekData = {};
 
   // OPEN DATA
   Object.keys(groupedByDayOpen).forEach((day) => {
     (groupedByDayOpen[day] || []).forEach((entry) => {
-      const date = new Date(entry[2]); // "2025-11-25T00:00:00.000Z"
-      const weekIndex = getWeekIndex(date, baseDate);
+      const date = new Date(entry[2]);
+      const weekIndex = getWeekIndex(date, mondayBaseDate);
 
       if (!weekData[weekIndex]) weekData[weekIndex] = {};
       if (!weekData[weekIndex][day]) weekData[weekIndex][day] = {};
@@ -59,7 +73,7 @@ export default function PanelMatkaTable({
   Object.keys(groupedData).forEach((day) => {
     (groupedData[day] || []).forEach((entry) => {
       const date = new Date(entry[2]);
-      const weekIndex = getWeekIndex(date, baseDate);
+      const weekIndex = getWeekIndex(date, mondayBaseDate);
 
       if (!weekData[weekIndex]) weekData[weekIndex] = {};
       if (!weekData[weekIndex][day]) weekData[weekIndex][day] = {};
@@ -68,33 +82,26 @@ export default function PanelMatkaTable({
     });
   });
 
-  // ------------------------------
-  // SORT week indexes in ASC (week 0, week 1, week 2…)
-  // ------------------------------
-  // const weekIndexes = Object.keys(weekData)
-  //   .map((x) => Number(x))
-  //   .sort((a, b) => a - b);
-  // GET ALL week indexes from weekData
+  // -----------------------------------------
+  // Sort week indexes
+  // -----------------------------------------
   const existingWeekIndexes = Object.keys(weekData)
     .map((n) => Number(n))
     .sort((a, b) => a - b);
 
-  // Find minimum and maximum week indexes
   const minWeek = existingWeekIndexes[0];
   const maxWeek = existingWeekIndexes[existingWeekIndexes.length - 1];
 
-  // Build continuous weeks list (fills missing weeks)
   const weekIndexes = [];
-  for (let w = minWeek; w <= maxWeek; w++) {
-    weekIndexes.push(w);
-  }
+  for (let w = minWeek; w <= maxWeek; w++) weekIndexes.push(w);
 
-  // ------------------------------
+  // -----------------------------------------
   // BUILD FINAL TABLE ROWS
-  // ------------------------------
+  // -----------------------------------------
   const data = weekIndexes.map((weekIndex) => {
-    const startOfWeek = new Date(baseDate);
-    startOfWeek.setDate(baseDate.getDate() + weekIndex * 7);
+    // Start week from Monday always
+    const startOfWeek = new Date(mondayBaseDate);
+    startOfWeek.setDate(mondayBaseDate.getDate() + weekIndex * 7);
 
     const endOfWeek = new Date(startOfWeek);
     endOfWeek.setDate(startOfWeek.getDate() + 6);
@@ -102,28 +109,11 @@ export default function PanelMatkaTable({
     const weekStartStr = formatDate(startOfWeek);
     const weekEndStr = formatDate(endOfWeek);
 
-    // const rowData = Object.values(dayMap).map((shortDay) => {
-    //   const fullDay = Object.keys(dayMap).find(
-    //     (key) => dayMap[key] === shortDay
-    //   );
-
-    //   const openData = weekData[weekIndex][fullDay]?.open || ["", "", ""];
-    //   const closeData = weekData[weekIndex][fullDay]?.close || ["", "", ""];
-
-    //   const jodi =
-    //     openData[1] && closeData[1] ? `${openData[1]}${closeData[1]}` : "";
-
-    //   return {
-    //     openPanel: openData,
-    //     jodi,
-    //     closePanel: closeData,
-    //   };
-    // });
     const rowData = Object.values(dayMap).map((shortDay) => {
       const fullDay = Object.keys(dayMap).find((k) => dayMap[k] === shortDay);
 
-      const weekEntry = weekData[weekIndex] || {}; // <-- FIX
-      const dayEntry = weekEntry[fullDay] || {}; // <-- FIX
+      const weekEntry = weekData[weekIndex] || {};
+      const dayEntry = weekEntry[fullDay] || {};
 
       const openData = dayEntry.open || ["", "", ""];
       const closeData = dayEntry.close || ["", "", ""];
@@ -131,11 +121,7 @@ export default function PanelMatkaTable({
       const jodi =
         openData[1] && closeData[1] ? `${openData[1]}${closeData[1]}` : "";
 
-      return {
-        openPanel: openData,
-        jodi,
-        closePanel: closeData,
-      };
+      return { openPanel: openData, jodi, closePanel: closeData };
     });
 
     return { weekStartStr, weekEndStr, rowData };
@@ -167,15 +153,7 @@ export default function PanelMatkaTable({
           <tbody>
             {data.map((row, rowIndex) => (
               <tr key={rowIndex}>
-                {/* WEEK RANGE */}
-                <td
-                  className="week-cell"
-                  style={{
-                    textAlign: "center",
-                    padding: "6px 4px",
-                    lineHeight: "1.2",
-                  }}
-                >
+                <td className="week-cell" style={{ textAlign: "center", padding: "6px 4px" }}>
                   <div style={{ fontSize: "11px", fontWeight: "600" }}>
                     {row.weekStartStr}
                   </div>
@@ -185,53 +163,31 @@ export default function PanelMatkaTable({
                   </div>
                 </td>
 
-                {/* DAY CELLS */}
-                {row.rowData.map(
-                  ({ openPanel, jodi, closePanel }, colIndex) => (
-                    <td
-                      key={colIndex}
-                      className="cell"
-                      style={{
-                        padding: "4px",
-                        textAlign: "center",
-                        verticalAlign: "middle",
-                      }}
-                    >
-                      {openPanel[0] && closePanel[0] ? (
-                        <div className="data-of-jodi-open-close compact-data-box">
-                          {/* Open Panel */}
-                          <div className="small-panel compact-panel">
-                            {String(openPanel[0])
-                              .split("")
-                              .map((d, i) => (
-                                <span key={i}>{d}</span>
-                              ))}
-                          </div>
-
-                          {/* Jodi */}
-                          <div
-                            className={`big-jodi compact-jodi ${
-                              redNumbers.includes(jodi) ? "red" : ""
-                            }`}
-                          >
-                            <span>{jodi || "-"}</span>
-                          </div>
-
-                          {/* Close Panel */}
-                          <div className="small-panel compact-panel">
-                            {String(closePanel[0])
-                              .split("")
-                              .map((d, i) => (
-                                <span key={i}>{d}</span>
-                              ))}
-                          </div>
+                {row.rowData.map(({ openPanel, jodi, closePanel }, colIndex) => (
+                  <td key={colIndex} className="cell" style={{ padding: "4px", textAlign: "center" }}>
+                    {openPanel[0] && closePanel[0] ? (
+                      <div className="data-of-jodi-open-close compact-data-box">
+                        <div className="small-panel compact-panel">
+                          {String(openPanel[0]).split("").map((d, i) => (
+                            <span key={i}>{d}</span>
+                          ))}
                         </div>
-                      ) : (
-                        <div className="empty-slot">-</div>
-                      )}
-                    </td>
-                  )
-                )}
+
+                        <div className={`big-jodi compact-jodi ${redNumbers.includes(jodi) ? "red" : ""}`}>
+                          <span>{jodi || "-"}</span>
+                        </div>
+
+                        <div className="small-panel compact-panel">
+                          {String(closePanel[0]).split("").map((d, i) => (
+                            <span key={i}>{d}</span>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="empty-slot">-</div>
+                    )}
+                  </td>
+                ))}
               </tr>
             ))}
           </tbody>
