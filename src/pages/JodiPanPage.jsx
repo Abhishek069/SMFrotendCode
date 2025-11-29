@@ -6,9 +6,9 @@ import { api } from "../lib/api";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { jwtDecode } from "jwt-decode";
+import * as XLSX from "xlsx";
 
 const JodiPanPage = () => {
-  // Initialize with an empty object to prevent errors when trying to access properties
   const [singleGameData, setSingleGameData] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -26,7 +26,7 @@ const JodiPanPage = () => {
     }
   }
 
-  const { id } = useParams(); // This correctly gets the game ID from the URL
+  const { id } = useParams();
 
   const fetchSingleGameData = async () => {
     try {
@@ -45,10 +45,9 @@ const JodiPanPage = () => {
 
   useEffect(() => {
     if (id) {
-      // Only fetch if an ID is present
       fetchSingleGameData();
     }
-  }, [id]); // Rerun effect if the URL ID changes
+  }, [id]);
 
   if (loading) {
     return <div>Loading game data...</div>;
@@ -58,6 +57,9 @@ const JodiPanPage = () => {
     return <div>Error: {error}</div>;
   }
 
+  // ------------------------------------------------------------------
+  // 🔥 EXCEL + JSON FILE UPLOAD HANDLER
+  // ------------------------------------------------------------------
   const handleFileUpload = async () => {
     try {
       if (!jsonFile) {
@@ -65,9 +67,36 @@ const JodiPanPage = () => {
         return;
       }
 
-      const fileText = await jsonFile.text();
-      const jsonData = JSON.parse(fileText);
+      const fileName = jsonFile.name.toLowerCase();
+      let jsonData = null;
 
+      // 1️⃣ If the file is JSON
+      if (fileName.endsWith(".json")) {
+        const fileText = await jsonFile.text();
+        jsonData = JSON.parse(fileText);
+      }
+
+      // 2️⃣ If the file is Excel (.xlsx)
+      else if (fileName.endsWith(".xlsx")) {
+        const data = await jsonFile.arrayBuffer();
+        const workbook = XLSX.read(data, { type: "array" });
+
+        // Convert first sheet to JSON
+        const firstSheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[firstSheetName];
+        jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+        // (Optional) Log converted JSON
+        console.log("📘 Converted Excel → JSON:", jsonData);
+      }
+
+      // Unsupported file
+      else {
+        toast.error("Only .json or .xlsx files are allowed!");
+        return;
+      }
+
+      // 🚀 Send final JSON to backend
       const response = await api("/AllGames/updateGamesData", {
         method: "POST",
         body: JSON.stringify(jsonData),
@@ -75,7 +104,7 @@ const JodiPanPage = () => {
 
       if (response.success) {
         toast.success("Game data updated successfully!");
-        fetchSingleGameData(); // refresh current game's data
+        fetchSingleGameData();
       } else {
         toast.error(response.message || "Failed to update game data!");
       }
@@ -85,14 +114,8 @@ const JodiPanPage = () => {
     }
   };
 
-  // Grouping the result data by day.
-  // This will create an object like:
-  // {
-  //   "Monday": [ ["123", "45", "678"], ... ],
-  //   "Tuesday": [ ["987", "65", "432"], ... ]
-  // }
+  // Grouping the result data by day
   const groupedByDay = (singleGameData.closeNo || []).reduce((acc, item) => {
-    // Ensure the item is an array and has at least 4 elements (3 numbers + 1 day)
     if (Array.isArray(item) && item.length >= 4) {
       const day = item[item.length - 1];
       const numbers = item.slice(0, -1);
@@ -104,55 +127,48 @@ const JodiPanPage = () => {
     return acc;
   }, {});
 
-  const groupedByDay_Open = (singleGameData.openNo || []).reduce(
-    (acc, item) => {
-      // Ensure the item is an array and has at least 4 elements (3 numbers + 1 day)
-      if (Array.isArray(item) && item.length >= 4) {
-        const day = item[item.length - 1];
-        const numbers = item.slice(0, -1);
-        if (!acc[day]) {
-          acc[day] = [];
-        }
-        acc[day].push(numbers);
+  const groupedByDay_Open = (singleGameData.openNo || []).reduce((acc, item) => {
+    if (Array.isArray(item) && item.length >= 4) {
+      const day = item[item.length - 1];
+      const numbers = item.slice(0, -1);
+      if (!acc[day]) {
+        acc[day] = [];
       }
-      return acc;
-    },
-    {}
-  );
+      acc[day].push(numbers);
+    }
+    return acc;
+  }, {});
 
-  // The description text now uses the fetched data safely
-  const description = `Dpboss ${singleGameData.name} jodi chart, ${singleGameData.name} jodi chart, old ${singleGameData.name} jodi chart, dpboss ${singleGameData.name} chart, ${singleGameData.name} jodi record, ${singleGameData.name}jodi record, ${singleGameData.name} jodi chart 2015, ${singleGameData.name} jodi chart 2012, ${singleGameData.name} jodi chart 2012 to 2023, ${singleGameData.name} final ank, ${singleGameData.name} jodi chart.co, ${singleGameData.name} jodi chart matka, matka jodi chart ${singleGameData.name}, matka ${singleGameData.name} chart, satta ${singleGameData.name} chart jodi, ${singleGameData.name} state chart, ${singleGameData.name} chart result, डीपी बॉस, सट्टा चार्ट, सट्टा मटका जोड़ी चार्ट, सट्टा मटका जोड़ी चार्ट, ${singleGameData.name} मटका जोड़ी चार्ट, सट्टा मटका ${singleGameData.name} चार्ट जोड़ी, ${singleGameData.name} सट्टा चार्ट, ${singleGameData.name} जोड़ी चार्ट`;
+  const description = `Dpboss ${singleGameData.name} jodi chart, ${singleGameData.name} jodi chart, old ${singleGameData.name} jodi chart, dpboss ${singleGameData.name} chart, ${singleGameData.name} jodi record...`;
+
   return (
     <div className="bg-danger border m-1 border-danger text-center ">
       <Header />
-      <div
-        className="border m-1 border-danger text-center "
-        style={{ background: "Pink" }}
-      >
+
+      <div className="border m-1 border-danger text-center" style={{ background: "Pink" }}>
         <h3>{singleGameData.name} JODI CHART</h3>
       </div>
+
       <div className="bg-warning m-1 border border-white py-3 text-center">
         <p>{description}</p>
       </div>
-      <div
-        className="border m-1 border-danger text-center "
-        style={{ backgroundColor: "Pink" }}
-      >
+
+      <div className="border m-1 border-danger text-center" style={{ backgroundColor: "Pink" }}>
         <h3>{singleGameData.name} JODI CHART</h3>
       </div>
-      {/* 🔹 JSON File Upload Section */}
-      {userRole === "Admin" ? (
-        <div
-          className="bg-light border border-dark p-3 m-2"
-          style={{ borderRadius: "10px" }}
-        >
-          <h5>Import / Update Game Data</h5>
+
+      {/* File Upload Section */}
+      {userRole === "Admin" && (
+        <div className="bg-light border border-dark p-3 m-2" style={{ borderRadius: "10px" }}>
+          <h5>Import / Update Game Data (.json or .xlsx)</h5>
+
           <input
             type="file"
-            accept=".json"
+            accept=".json, .xlsx"
             onChange={(e) => setJsonFile(e.target.files[0])}
             className="form-control my-2"
           />
+
           <button
             onClick={handleFileUpload}
             className="btn btn-success"
@@ -161,50 +177,42 @@ const JodiPanPage = () => {
             Upload & Update
           </button>
         </div>
-      ) : (
-        <div></div>
       )}
 
-      <div
-        className="border m-1 border-danger text-center "
-        style={{ backgroundColor: "Pink" }}
-      >
+      {/* TOP Result */}
+      <div className="border m-1 border-danger text-center" style={{ backgroundColor: "Pink" }}>
         <h3>{singleGameData.name}</h3>
         <h3>
-          {singleGameData.openNo?.length > 0 &&
-          singleGameData.closeNo?.length > 0
-            ? singleGameData.openNo[singleGameData.openNo.length - 1]
-                .slice(0, 2)
-                .join("-") +
+          {singleGameData.openNo?.length > 0 && singleGameData.closeNo?.length > 0
+            ? singleGameData.openNo[singleGameData.openNo.length - 1].slice(0, 2).join("-") +
               singleGameData.closeNo[singleGameData.closeNo.length - 1][1] +
               "-" +
               singleGameData.closeNo[singleGameData.closeNo.length - 1][0]
             : "N/A"}
         </h3>
       </div>
-      {/* Pass the grouped data to the MatkaTable component */}
+
+      {/* TABLE */}
       <MatkaTable
         groupedData={groupedByDay}
         groupedDataOpen={groupedByDay_Open}
         titleNameHeading={singleGameData.name}
       />
-      <div
-        className="border m-1 border-danger text-center "
-        style={{ backgroundColor: "Pink" }}
-      >
+
+      {/* BOTTOM Result */}
+      <div className="border m-1 border-danger text-center" style={{ backgroundColor: "Pink" }}>
         <h3>{singleGameData.name}</h3>
         <h3>
-          {singleGameData.openNo?.length > 0 &&
-          singleGameData.closeNo?.length > 0
-            ? singleGameData.openNo[singleGameData.openNo.length - 1]
-                .slice(0, 2)
-                .join("-") +
+          {singleGameData.openNo?.length > 0 && singleGameData.closeNo?.length > 0
+            ? singleGameData.openNo[singleGameData.openNo.length - 1].slice(0, 2).join("-") +
               singleGameData.closeNo[singleGameData.closeNo.length - 1][1] +
               "-" +
               singleGameData.closeNo[singleGameData.closeNo.length - 1][0]
             : "N/A"}
         </h3>
       </div>
+
+      <ToastContainer />
     </div>
   );
 };

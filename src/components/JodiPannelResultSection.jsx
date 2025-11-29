@@ -382,6 +382,7 @@ export default function JodiPannelResultSection() {
   //     toast.error("Error saving range results: " + (err.message || err));
   //   }
   // };
+
   const handleSaveRangeResults = async () => {
     if (!rangeGameId) {
       toast.error("Please select a game");
@@ -474,7 +475,9 @@ export default function JodiPannelResultSection() {
   const handleDeleteGame = async (e) => {
     e.preventDefault();
     try {
-      await api(`/AllGames/deleteGame/${encodeURIComponent(deleteGameName)}`, { method: "DELETE" });
+      await api(`/AllGames/deleteGame/${encodeURIComponent(deleteGameName)}`, {
+        method: "DELETE",
+      });
       toast.success("Game deleted successfully!");
       setShowModal(false);
       fetchGamesAgain();
@@ -753,11 +756,15 @@ export default function JodiPannelResultSection() {
       if (mainNumber.length >= 2) {
         const firstDigit = parseInt(mainNumber[0], 10);
         const secondDigit = parseInt(mainNumber[1], 10);
-        if (firstDigit > secondDigit) {
-          toast.error(
-            "Invalid number: first digit must be smaller than second digit."
-          );
-          return;
+        const thirdDigit = parseInt(mainNumber[2], 10);
+
+        if (secondDigit !== 0 || thirdDigit !== 0) {
+          if (firstDigit > secondDigit || secondDigit > thirdDigit) {
+            toast.error(
+              "Invalid number: first digit must be smaller than second digit."
+            );
+            return;
+          }
         }
       }
 
@@ -929,12 +936,13 @@ export default function JodiPannelResultSection() {
       const first = parseInt(mainDigits[0], 10);
       const second = parseInt(mainDigits[1], 10);
       console.log(first, second);
-
-      if (first > second) {
-        return {
-          ok: false,
-          msg: "Invalid number: first digit must be smaller than second digit",
-        };
+      if (second !== 0) {
+        if (first > second) {
+          return {
+            ok: false,
+            msg: "Invalid number: first digit must be smaller than second digit",
+          };
+        }
       }
     }
 
