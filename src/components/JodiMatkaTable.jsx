@@ -55,7 +55,8 @@ export default function MatkaTable({ groupedData, groupedDataOpen,titleNameHeadi
 
   return (
     <div>
-      <button className="go-bottom">Go to Bottom</button>
+      <button className="go-bottom" onClick={() => { window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "smooth",});
+    }}>Go to Bottom </button>
 
       {/* 🔹 Single Combined Table */}
       <table className="matka-table">
