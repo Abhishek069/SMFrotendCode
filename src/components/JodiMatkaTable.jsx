@@ -93,8 +93,7 @@ export default function MatkaTable({ groupedData, groupedDataOpen,titleNameHeadi
               ))}
             </tbody>
           </table>
-          <button className="go-up" onClick={() => { window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "smooth",});
-        }}>Go to Bottom </button>
+          <button className="go-up" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>Go to Top</button>
     </div>
   );
 }
