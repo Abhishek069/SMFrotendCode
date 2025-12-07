@@ -824,10 +824,13 @@ export default function JodiPannelResultSection() {
   }
 
   function isOlderThan12Hours(dateString) {
+    
     const updated = new Date(dateString);
     const now = new Date();
     const diffMs = now - updated; // difference in milliseconds
     const hours = diffMs / (1000 * 60 * 60); // convert to hours
+    // console.log(hours, hours >= 24, item);
+    
     return hours >= 24;
   }
 
@@ -844,7 +847,7 @@ export default function JodiPannelResultSection() {
     const lastOpen = getLatestEntry(item.openNo);
     const lastClose = getLatestEntry(item.closeNo);
 
-    if (!lastOpen && !lastClose) return "No numbers";
+    if (!lastOpen && !lastClose) return "***-**-***";
 
     const openMain = lastOpen?.[0] || "";
     const openDigit = lastOpen?.[1] || "";
@@ -874,7 +877,7 @@ export default function JodiPannelResultSection() {
       return `${closeMain}-${closeDigit}`;
     }
 
-    return "No numbers";
+    return "***-**-***";
   };
 
   const canEditGame = (game, role, username) => {
@@ -1188,7 +1191,8 @@ export default function JodiPannelResultSection() {
                     fontSize: "28px",
                   }}
                 >
-                  {isOlderThan12Hours(item.openNo.at(-1)?.[2])
+                  {console.log(item.openNo[0], item.name)}
+                  {isOlderThan12Hours(item.openNo[0]?.[2], item.name)
                     ? "***-**-***"
                     : displayResult}
                 </h5>

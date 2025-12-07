@@ -53,12 +53,12 @@ const LiveResultSection = () => {
 
             // LAST OPEN
             const lastOpen = game.openNo?.length
-              ? game.openNo[game.openNo.length - 1]
+              ? game.openNo[0]
               : null;
 
             // LAST CLOSE
             const lastClose = game.closeNo?.length
-              ? game.closeNo[game.closeNo.length - 1]
+              ? game.closeNo[0]
               : null;
 
             if (!lastOpen && !lastClose) {

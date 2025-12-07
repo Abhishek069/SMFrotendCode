@@ -212,6 +212,8 @@ const AddNotificationModal = ({ onClose, onSave }) => {
 
 // --- Main Notification Page ---
 function NotificationPage({ role, notificationMessage }) {
+  console.log(role);
+  
   const [isModalOpen, setIsModalOpen] = useState(false);
   // console.log(notificationMessage);
 
