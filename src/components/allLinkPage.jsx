@@ -97,7 +97,7 @@ const AllPageLink = () => {
                   cursor-pointer transition duration-150 ease-in-out
                   hover:bg-amber-300 active:bg-amber-400
                 "
-                style={{ backgroundColor: '#ffddaf', fontSize:"20px", fontWeight:"bold" }} // Light orange/peach background
+                style={{ backgroundColor: '#ffddaf', fontSize:"20px", fontWeight:"bold",  border: "2px solid pink", borderRadius: "12px"}} // Light orange/peach background
                 title={`View ${game.name} Chart`}
               > 
                 {game.name} Chart 
