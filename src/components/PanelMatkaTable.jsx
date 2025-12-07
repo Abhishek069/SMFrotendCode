@@ -131,7 +131,8 @@ export default function PanelMatkaTable({
 
   return (
     <div className="panel-table-wrapper compact-layout">
-      <button className="go-bottom">Go to Bottom</button>
+      <button className="go-bottom" onClick={() => { window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "smooth",});
+    }}>Go to Bottom </button>
 
       <div className="table-responsive compact-table-box">
         <table className="matka-table compact-table">
