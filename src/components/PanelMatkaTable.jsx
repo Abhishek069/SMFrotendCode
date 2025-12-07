@@ -194,6 +194,8 @@ export default function PanelMatkaTable({
           </tbody>
         </table>
       </div>
+      <button className="go-up" onClick={() => { window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "smooth",});
+        }}>Go to Up </button>
     </div>
   );
 }
