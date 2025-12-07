@@ -997,3 +997,40 @@
     font-size: 0.95rem;
   }
 }
+
+/* ✅ Force header to be responsive with buttons */
+.header-inner {
+  display: flex;
+  flex-wrap: wrap;         /* ✅ allows wrapping */
+  gap: 10px;
+}
+
+/* ✅ Button group wrapping */
+.header-actions {
+  display: flex;
+  flex-wrap: wrap;         /* ✅ buttons wrap instead of overflow */
+  gap: 8px;
+  justify-content: center;
+}
+
+/* ✅ Fix Home button spacing */
+.header-btn.home {
+  margin-right: 0;        /* ✅ removes layout break */
+}
+
+/* ✅ Perfect Mobile Stack */
+@media (max-width: 600px) {
+  .header-inner {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .header-actions {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .logo-block {
+    justify-content: center;
+  }
+}
