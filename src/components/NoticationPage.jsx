@@ -59,7 +59,7 @@ const ScrollingNotification = ({
 
 // --- Modal Component ---
 const AddNotificationModal = ({ onClose, onSave }) => {
-  const [formData, setFormData] = useState({ name: "", index: "1" });
+  const [formData, setFormData] = useState({ name: "", index: "0" });
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState(null);
   const INDEX_OPTIONS = ["1", "2", "3", "4"];
