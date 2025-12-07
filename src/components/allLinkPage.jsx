@@ -100,7 +100,7 @@ const AllPageLink = () => {
                 style={{ backgroundColor: '#ffddaf', fontSize:"20px", fontWeight:"bold" }} // Light orange/peach background
                 title={`View ${game.name} Chart`}
               >
-                {game.name} Chart
+                {game.name} Chart 
               </div>
             ))
           ) : (
