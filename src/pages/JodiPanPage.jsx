@@ -184,10 +184,10 @@ const JodiPanPage = () => {
         <h3>{singleGameData.name}</h3>
         <h3>
           {singleGameData.openNo?.length > 0 && singleGameData.closeNo?.length > 0
-            ? singleGameData.openNo[singleGameData.openNo.length - 1].slice(0, 2).join("-") +
-              singleGameData.closeNo[singleGameData.closeNo.length - 1][1] +
+            ? singleGameData.openNo[0].slice(0, 2).join("-") +
+              singleGameData.closeNo[0][1] +
               "-" +
-              singleGameData.closeNo[singleGameData.closeNo.length - 1][0]
+              singleGameData.closeNo[0][0]
             : "N/A"}
         </h3>
       </div>
@@ -204,17 +204,17 @@ const JodiPanPage = () => {
         <h3>{singleGameData.name}</h3>
         <h3>
           {singleGameData.openNo?.length > 0 && singleGameData.closeNo?.length > 0
-            ? singleGameData.openNo[singleGameData.openNo.length - 1].slice(0, 2).join("-") +
-              singleGameData.closeNo[singleGameData.closeNo.length - 1][1] +
+            ? singleGameData.openNo[0].slice(0, 2).join("-") +
+              singleGameData.closeNo[0][1] +
               "-" +
-              singleGameData.closeNo[singleGameData.closeNo.length - 1][0]
+              singleGameData.closeNo[0][0]
             : "N/A"}
         </h3>
-      </div>
+      </div> 
 
       <ToastContainer />
     </div>
   );
 };
-
+ 
 export default JodiPanPage;
