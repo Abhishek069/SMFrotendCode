@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "./Comman.css"; // <-- add this
+import "./Comman.css";
 
 const Header = () => {
   const navigate = useNavigate();
@@ -23,13 +23,18 @@ const Header = () => {
       <div className="header-inner">
         
         {/* Branding */}
-        <div className="logo-block">
+        <div className="logo-block" onClick={() => navigate("/")} style={{ cursor: "pointer" }}>
           <span className="logo-dp">Dp</span>
           <span className="logo-rest">BOSS Services</span>
         </div>
 
         {/* Right Section */}
         <div className="header-actions">
+          {/* ✅ HOME BUTTON */}
+          <button className="header-btn home" onClick={() => navigate("/")}>
+            Home
+          </button>
+
           {!isLoggedIn ? (
             <button className="header-btn login" onClick={() => navigate("/login")}>
               Login
