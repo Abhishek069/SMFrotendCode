@@ -16,6 +16,7 @@ import UserPayments from "../components/AgentList";
 import NotificationPage from "../components/NoticationPage";
 import AllPageLink from '../components/allLinkPage'
 import { api } from "../lib/api";
+import { jwtDecode } from "jwt-decode";
 
 // --- New Component for Static Buttons ---
 
@@ -83,8 +84,22 @@ const StaticButtons = () => {
 
 const HomePage = ({ setGameTitle }) => {
   const [responseNotification, setResponseNotification] = useState([]);
-  const role = localStorage.getItem("userRole"); // This variable is used for the check
-
+  const token = localStorage.getItem("authToken");
+  
+    // let username = null;
+    let role = null;
+  
+    if (token) {
+      try {
+        const decoded = jwtDecode(token);
+        // role = decoded.role;
+        role = decoded.role;
+        // console.log(role, role);
+      } catch (err) {
+        console.error("Invalid token", err);
+      }
+    }
+  
   
   // --- Fetch Notifications (Logic remains the same) ---
   const handleGetNotification = async () => {
