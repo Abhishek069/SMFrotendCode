@@ -1188,7 +1188,7 @@ export default function JodiPannelResultSection() {
                     fontSize: "28px",
                   }}
                 >
-                  {isOlderThan12Hours(item.openNo.at(-1)?.[2])
+                  {isOlderThan12Hours(item.openNo[0]?.[2])
                     ? "***-**-***"
                     : displayResult}
                 </h5>
