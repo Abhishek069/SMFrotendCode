@@ -127,8 +127,7 @@ const LiveResultSection = () => {
   if (loading) {
     return (
       <div
-        className="bg-warning border border-white m-1 p-3 Live-Result-section-main-container"
-        style={{ backgroundColor: "#ffcc99" }}
+        className="bg-warning border border-white m-1 p-3 Live-Result-section-main-container bg-[#ffea00]"
       >
         <div className="bg-pink text-white text-center  mb-4 fw-bold Live-Result-Heading">
           <h2>💥LIVE RESULT💥</h2>
