@@ -152,14 +152,14 @@ const LiveResultSection = () => {
 
       <div className="row">
         {error ? (
-          <p className="text-center text-danger">{error}</p>
+          <p className="text-center text-danger"  style={{ backgroundColor: "black" }}>{error}</p>
         ) : results.length > 0 ? (
           results.map((item, idx) => (
             <div className="col-md-4" key={idx}>
               <LiveResultItem
                 title={item.title}
                 numbers={
-                  isOlderThan12Hours(item.updatedAt)
+                  isOlderThan12Hours(item.updatedAt) 
                     ? "***_**_***"
                     : item.numbers
                 }
