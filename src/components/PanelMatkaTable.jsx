@@ -141,7 +141,7 @@ export default function PanelMatkaTable({
               <th colSpan={8} className="title compact-title">
                 {gameName} MATKA PANEL RECORD 2019 - 2025
               </th>
-            </tr>
+            </tr> 
             <tr>
               {headers.map((day) => (
                 <th key={day} className="day compact-day">
@@ -194,6 +194,8 @@ export default function PanelMatkaTable({
           </tbody>
         </table>
       </div>
+      <button className="go-up" onClick={() => { window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "smooth",});
+        }}>Go to Up </button>
     </div>
   );
 }

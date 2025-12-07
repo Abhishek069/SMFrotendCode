@@ -373,7 +373,14 @@
   margin-bottom: 10px;
   cursor: pointer;
 }
-
+.go-up {
+  background-color: #5ebdfc;
+  border: none;
+  padding: 10px 20px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
 .matka-table {
   border-collapse: collapse;
   margin: auto;
@@ -770,7 +777,14 @@
   margin-bottom: 10px;
   cursor: pointer;
 }
-
+.go-up {
+  background-color: #5ebdfc;
+  border: none;
+  padding: 10px 20px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
 /* ------------------------------ */
 /* EXTRA MODAL CSS (YOUR ORIGINAL)*/
 /* ------------------------------ */

@@ -55,44 +55,46 @@ export default function MatkaTable({ groupedData, groupedDataOpen,titleNameHeadi
 
   return (
     <div>
-      <button className="go-bottom" onClick={() => { window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "smooth",});
-    }}>Go to Bottom </button>
+          <button className="go-bottom" onClick={() => { window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "smooth",});
+        }}>Go to Bottom </button>
 
-      {/* 🔹 Single Combined Table */}
-      <table className="matka-table">
-        <thead>
-          <tr>
-            <th colSpan={7} className="title">
-              {titleNameHeading} MATKA RECORD (Jodi + Open) 2019 - 2025
-            </th>
-          </tr>
-          <tr>
-            {headers.map((day) => (
-              <th key={day} className="day">{day}</th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {combinedData.map((row, rowIndex) => (
-            <tr key={rowIndex}>
-              {row.map((cell, colIndex) => {
-                // 🔹 Check if *either* number is in red list
-                const shouldHighlight = redNumbers.some((num) =>
-                  cell.includes(num)
-                );
-                return (
-                  <td
-                    key={colIndex}
-                    className={shouldHighlight ? "red" : ""}
-                  >
-                    <h1 className="colNameCell"> {cell} </h1>
-                  </td>
-                );
-              })}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+          {/* 🔹 Single Combined Table */}
+          <table className="matka-table">
+            <thead>
+              <tr>
+                <th colSpan={7} className="title">
+                  {titleNameHeading} MATKA RECORD (Jodi + Open) 2019 - 2025
+                </th>
+              </tr>
+              <tr>
+                {headers.map((day) => (
+                  <th key={day} className="day">{day}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {combinedData.map((row, rowIndex) => (
+                <tr key={rowIndex}>
+                  {row.map((cell, colIndex) => {
+                    // 🔹 Check if *either* number is in red list
+                    const shouldHighlight = redNumbers.some((num) =>
+                      cell.includes(num)
+                    );
+                    return (
+                      <td
+                        key={colIndex}
+                        className={shouldHighlight ? "red" : ""}
+                      >
+                        <h1 className="colNameCell"> {c } </h1>
+                      </td>
+                    );
+                  })}   
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <button className="go-up" onClick={() => { window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "smooth",});
+        }}>Go to Bottom </button>
     </div>
   );
 }
