@@ -823,11 +823,14 @@ export default function JodiPannelResultSection() {
     );
   }
 
-  function isOlderThan12Hours(dateString) {
+  function isOlderThan12Hours(dateString, item) {
+    
     const updated = new Date(dateString);
     const now = new Date();
     const diffMs = now - updated; // difference in milliseconds
     const hours = diffMs / (1000 * 60 * 60); // convert to hours
+    console.log(hours, hours >= 24, item);
+    
     return hours >= 24;
   }
 
@@ -1188,7 +1191,8 @@ export default function JodiPannelResultSection() {
                     fontSize: "28px",
                   }}
                 >
-                  {isOlderThan12Hours(item.openNo[0]?.[2])
+                  {console.log(item.openNo[0], item.name)}
+                  {isOlderThan12Hours(item.openNo[0]?.[2], item.name)
                     ? "***-**-***"
                     : displayResult}
                 </h5>
