@@ -298,6 +298,12 @@
   margin-top: 20px; /* Space above the buttons */
 }
 
+/* Home page button */
+.header-btn.home {
+  background: #007bff;
+  color: white;
+  margin-right: 10px;
+}
 .button-group button {
   padding: 10px 20px;
   border: none;
