@@ -62,7 +62,7 @@ const AddNotificationModal = ({ onClose, onSave }) => {
   const [formData, setFormData] = useState({ name: "", index: "0" });
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState(null);
-  const INDEX_OPTIONS = ["1", "2", "3", "4"];
+  const INDEX_OPTIONS = ["0", "1", "2", "3"];
 
   const handleChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
