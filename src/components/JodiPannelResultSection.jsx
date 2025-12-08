@@ -783,7 +783,7 @@ export default function JodiPannelResultSection() {
           return;
         }
       }
-
+ 
       const newResultArray = [mainNumber];
       if (providedCheckDigit) newResultArray.push(providedCheckDigit);
       if (editGame.openOrClose) {
