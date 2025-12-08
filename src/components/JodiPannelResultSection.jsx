@@ -784,7 +784,7 @@ export default function JodiPannelResultSection() {
           );
           return; 
         }
-      }
+      } 
 
       if (mainNumber.length >= 3) {
         const lastThree = mainNumber.slice(-3).split("").map(Number);
