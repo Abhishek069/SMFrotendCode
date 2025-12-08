@@ -753,21 +753,39 @@ export default function JodiPannelResultSection() {
       const mainNumber = parts[0];
       const providedCheckDigit = parts[1];
 
-      if (mainNumber.length >= 2) {
-        const firstDigit = parseInt(mainNumber[0], 10);
-        const secondDigit = parseInt(mainNumber[1], 10);
-        const thirdDigit = parseInt(mainNumber[2], 10);
+      // if (mainNumber.length >= 2) {
+      //   const firstDigit = parseInt(mainNumber[0], 10);
+      //   const secondDigit = parseInt(mainNumber[1], 10);
+      //   const thirdDigit = parseInt(mainNumber[2], 10);
 
-        if (secondDigit !== 0 || thirdDigit !== 0) {
-          if (firstDigit > secondDigit || secondDigit > thirdDigit) {
-            toast.error(
-              "Invalid number: first digit must be smaller than second digit."
-            );
-            return;
-          }
+      //   if (secondDigit !== 0 || thirdDigit !== 0) {
+      //     if (firstDigit > secondDigit || secondDigit > thirdDigit) {
+      //       toast.error(
+      //         "Invalid number: first digit must be smaller than second digit."
+      //       );
+      //       return;
+      //     }
+      //   }
+      // }
+
+      if (mainNumber.length >= 3) {
+        const d1 = parseInt(mainNumber[0], 10);
+        const d2 = parseInt(mainNumber[1], 10);
+        const d3 = parseInt(mainNumber[2], 10);
+      
+        // 0 => 10 everywhere
+        const firstDigit  = d1 === 0 ? 10 : d1;
+        const secondDigit = d2 === 0 ? 10 : d2;
+        const thirdDigit  = d3 === 0 ? 10 : d3;
+      
+        if (!(firstDigit < secondDigit && secondDigit < thirdDigit)) {
+          toast.error(
+            "Invalid number: First < Second < Third (0 is treated as 10)"
+          );
+          return;
         }
       }
-
+      
       if (mainNumber.length >= 3) {
         const lastThree = mainNumber.slice(-3).split("").map(Number);
         const sum = lastThree.reduce((a, b) => a + b, 0);
@@ -783,7 +801,7 @@ export default function JodiPannelResultSection() {
           return;
         }
       }
- 
+
       const newResultArray = [mainNumber];
       if (providedCheckDigit) newResultArray.push(providedCheckDigit);
       if (editGame.openOrClose) {
