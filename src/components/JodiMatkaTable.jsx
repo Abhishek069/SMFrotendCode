@@ -85,7 +85,7 @@ export default function MatkaTable({ groupedData, groupedDataOpen,titleNameHeadi
                         key={colIndex}
                         className={shouldHighlight ? "red" : ""}
                       >
-                        <h1 className="colNameCell"> {c } </h1>
+                        <h1 className="colNameCell"> {cell } </h1>
                       </td>
                     );
                   })}   
