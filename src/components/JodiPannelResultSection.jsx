@@ -769,21 +769,23 @@ export default function JodiPannelResultSection() {
       // }
 
       if (mainNumber.length >= 3) {
-        const firstDigit = parseInt(mainNumber[0], 10);
-        const secondDigit = parseInt(mainNumber[1], 10);
-        const thirdDigitRaw = parseInt(mainNumber[2], 10);
+        const d1 = parseInt(mainNumber[0], 10);
+        const d2 = parseInt(mainNumber[1], 10);
+        const d3 = parseInt(mainNumber[2], 10);
       
-        // ✅ Treat 0 as 10 (largest)
-        const thirdDigit = thirdDigitRaw === 0 ? 10 : thirdDigitRaw;
+        // 0 => 10 everywhere
+        const firstDigit  = d1 === 0 ? 10 : d1;
+        const secondDigit = d2 === 0 ? 10 : d2;
+        const thirdDigit  = d3 === 0 ? 10 : d3;
       
         if (!(firstDigit < secondDigit && secondDigit < thirdDigit)) {
           toast.error(
-            "Invalid number: must satisfy First < Second < Third (0 is treated as 10)"
+            "Invalid number: First < Second < Third (0 is treated as 10)"
           );
           return;
         }
       }
-
+      
       if (mainNumber.length >= 3) {
         const lastThree = mainNumber.slice(-3).split("").map(Number);
         const sum = lastThree.reduce((a, b) => a + b, 0);
@@ -799,7 +801,7 @@ export default function JodiPannelResultSection() {
           return;
         }
       }
- 
+
       const newResultArray = [mainNumber];
       if (providedCheckDigit) newResultArray.push(providedCheckDigit);
       if (editGame.openOrClose) {
