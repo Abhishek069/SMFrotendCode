@@ -753,18 +753,34 @@ export default function JodiPannelResultSection() {
       const mainNumber = parts[0];
       const providedCheckDigit = parts[1];
 
-      if (mainNumber.length >= 2) {
+      // if (mainNumber.length >= 2) {
+      //   const firstDigit = parseInt(mainNumber[0], 10);
+      //   const secondDigit = parseInt(mainNumber[1], 10);
+      //   const thirdDigit = parseInt(mainNumber[2], 10);
+
+      //   if (secondDigit !== 0 || thirdDigit !== 0) {
+      //     if (firstDigit > secondDigit || secondDigit > thirdDigit) {
+      //       toast.error(
+      //         "Invalid number: first digit must be smaller than second digit."
+      //       );
+      //       return;
+      //     }
+      //   }
+      // }
+
+      if (mainNumber.length >= 3) {
         const firstDigit = parseInt(mainNumber[0], 10);
         const secondDigit = parseInt(mainNumber[1], 10);
-        const thirdDigit = parseInt(mainNumber[2], 10);
-
-        if (secondDigit !== 0 || thirdDigit !== 0) {
-          if (firstDigit > secondDigit || secondDigit > thirdDigit) {
-            toast.error(
-              "Invalid number: first digit must be smaller than second digit."
-            );
-            return;
-          }
+        const thirdDigitRaw = parseInt(mainNumber[2], 10);
+      
+        // ✅ Treat 0 as 10 (largest)
+        const thirdDigit = thirdDigitRaw === 0 ? 10 : thirdDigitRaw;
+      
+        if (!(firstDigit < secondDigit && secondDigit < thirdDigit)) {
+          toast.error(
+            "Invalid number: must satisfy First < Second < Third (0 is treated as 10)"
+          );
+          return;
         }
       }
 
