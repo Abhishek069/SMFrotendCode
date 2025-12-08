@@ -782,7 +782,7 @@ export default function JodiPannelResultSection() {
           toast.error(
             "Invalid number Please check or contact operator : First < Second < Third"
           );
-          return;
+          return; 
         }
       }
 
