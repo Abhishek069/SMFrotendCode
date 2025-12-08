@@ -778,14 +778,14 @@ export default function JodiPannelResultSection() {
         const secondDigit = d2 === 0 ? 10 : d2;
         const thirdDigit  = d3 === 0 ? 10 : d3;
       
-        if (!(firstDigit < secondDigit && secondDigit < thirdDigit)) {
+        if (!(firstDigit <= secondDigit && secondDigit <= thirdDigit)) {
           toast.error(
-            "Invalid number: First < Second < Third (0 is treated as 10)"
+            "Invalid number Please check or contact operator : First < Second < Third"
           );
-          return;
+          return; 
         }
-      }
-      
+      } 
+
       if (mainNumber.length >= 3) {
         const lastThree = mainNumber.slice(-3).split("").map(Number);
         const sum = lastThree.reduce((a, b) => a + b, 0);
