@@ -51,7 +51,21 @@ const LiveResultSection = () => {
               };
             }
 
-            // LAST OPEN
+            // ✅ SHOW "LOADING..." IN LAST 15 MINUTES BEFORE CLOSE
+            if (
+              closeTime &&
+              closeTime > now &&
+              closeTime - now <= 15 * 60 * 1000   // 15 minutes
+            ) {
+              return {
+                title: game.name,
+                numbers: "Loading...",
+                openTime: openTimeFromGame,
+                closeTime: closeTimeFromGame,
+                updatedAt: game.updatedAt,
+              };
+            }
+                        // LAST OPEN
             const lastOpen = game.openNo?.length
               ? game.openNo[0]
               : null;
