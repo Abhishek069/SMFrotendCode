@@ -12,7 +12,8 @@ const PanelPage = () => {
   const [hiddenDays, setHiddenDays] = useState([]); // admin can hide specific day columns
 
   const { id } = useParams();
-  const isAdmin = (localStorage.getItem("role") || "").trim().toLowerCase() === "admin";
+  const role = localStorage.getItem("role") || "";
+  const isAdmin = role === "admin" || role === "Admin";
 
   const fetchSingleGameData = async () => {
     try {
