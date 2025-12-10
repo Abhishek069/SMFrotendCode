@@ -21,13 +21,29 @@ const LiveResultSection = () => {
         const data = await api("/AllGames/latest-updates");
 
         if (data && data.hasData && Array.isArray(data.data)) {
-          const formatted = data.data.map((game) => {
+          // 🔹 1) Filter only ACTIVE games
+          const activeGames = data.data.filter((game) => {
+            // If backend sends isActive flag
+            if (typeof game.isActive === "boolean") {
+              return game.isActive === true;
+            }
+        
+            // If backend sends status field
+            if (typeof game.status === "string") {
+              return game.status.toUpperCase() !== "INACTIVE";
+            }
+        
+            // If no flag, treat as active by default
+            return true;
+          });
+        
+          // 🔹 2) Then format only active games
+          const formatted = activeGames.map((game) => {
             const now = new Date();
-
-            // TIME FROM BACKEND (OPEN / CLOSE)
+        
             const openTimeFromGame = game.startTime || "";
             const closeTimeFromGame = game.endTime || "";
-
+        
             // HANDLE LOADING BEFORE START TIME
             let startTime = null;
             if (game.startTime) {
@@ -41,8 +57,8 @@ const LiveResultSection = () => {
                 0
               );
             }
-
-            if (startTime && startTime >= now) {
+        
+            if (startTime && now < startTime) {
               return {
                 title: game.name,
                 numbers: "Loading...",
@@ -50,17 +66,10 @@ const LiveResultSection = () => {
                 closeTime: closeTimeFromGame,
               };
             }
-
-            // LAST OPEN
-            const lastOpen = game.openNo?.length
-              ? game.openNo[0]
-              : null;
-
-            // LAST CLOSE
-            const lastClose = game.closeNo?.length
-              ? game.closeNo[0]
-              : null;
-
+        
+            const lastOpen = game.openNo?.length ? game.openNo[0] : null;
+            const lastClose = game.closeNo?.length ? game.closeNo[0] : null;
+        
             if (!lastOpen && !lastClose) {
               return {
                 title: game.name,
@@ -69,17 +78,17 @@ const LiveResultSection = () => {
                 closeTime: closeTimeFromGame,
               };
             }
-
+        
             const openMain = lastOpen?.[0] || "";
             const openDigit = lastOpen?.[1] || "";
             const openDay = lastOpen?.[4] || "";
-
+        
             const closeMain = lastClose?.[0] || "";
             const closeDigit = lastClose?.[1] || "";
             const closeDay = lastClose?.[4] || "";
-
+        
             let lastResult = "***-**_***";
-
+        
             if (
               lastOpen &&
               lastClose &&
@@ -98,20 +107,21 @@ const LiveResultSection = () => {
             ) {
               lastResult = `${closeMain}-${closeDigit}`;
             }
-
+        
             return {
               title: game.name,
               numbers: lastResult,
               openTime: openTimeFromGame,
-              closeTime: closeTimeFromGame,
+              closeTimeFromGame,
               updatedAt: game.updatedAt,
             };
           });
-
+        
           setResults(formatted);
         } else {
           setResults([]);
         }
+
       } catch (err) {
         console.error("Error fetching live results:", err);
         setError("Failed to fetch live results. Please try again later.");
