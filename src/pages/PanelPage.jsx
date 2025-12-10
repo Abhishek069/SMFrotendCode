@@ -9,8 +9,10 @@ const PanelPage = () => {
   const [singleGameData, setSingleGameData] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [hiddenDays, setHiddenDays] = useState([]); // admin can hide specific day columns
 
   const { id } = useParams();
+  const isAdmin = localStorage.getItem("role") === "admin";
 
   const fetchSingleGameData = async () => {
     try {
@@ -108,6 +110,24 @@ const PanelPage = () => {
 
       <div className="border m-1 border-danger text-center " style={{ backgroundColor: "Pink" }}>
         <h3>{singleGameData.name}</h3>
+
+        {isAdmin && (
+          <div className="mb-2">
+            {["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"].map((day) => (
+              <button
+                key={day}
+                className="btn btn-sm btn-dark m-1"
+                onClick={() =>
+                  setHiddenDays((prev) =>
+                    prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]
+                  )
+                }
+              >
+                {hiddenDays.includes(day) ? `Show ${day}` : `Hide ${day}`}
+              </button>
+            ))}
+          </div>
+        )}
         <h3>
           {(() => {
             const today = new Date().toISOString().split("T")[0];
@@ -131,10 +151,11 @@ const PanelPage = () => {
       </div>
 
       <PanelMatkaTable
-        groupedData={groupedByDay}                    // close numbers grouped by day (arrays of entries)
-        groupedByDayOpen={groupedByDayOpen}           // open numbers grouped by day
+        groupedData={groupedByDay}
+        groupedByDayOpen={groupedByDayOpen}
         gameName={singleGameData.name}
-        baseDateFromData={baseDateFromData}           // earliest date (YYYY-MM-DD)
+        baseDateFromData={baseDateFromData}
+        hiddenDays={hiddenDays}   // admin-controlled hidden columns
       />
 
       <div className="border m-1 border-danger text-center " style={{ backgroundColor: "Pink" }}>
