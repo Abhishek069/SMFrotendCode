@@ -128,12 +128,24 @@ const PanelPage = () => {
       <div className="border m-1 border-danger text-center " style={{ backgroundColor: "Pink" }}>
         <h3>{singleGameData.name}</h3>
         <h3>
-          {singleGameData.openNo?.length > 0 && singleGameData.closeNo?.length > 0
-            ? singleGameData.openNo[0].slice(0, 2).join("-") +
-              singleGameData.closeNo[0][1] +
-              "-" +
-              singleGameData.closeNo[0][0]
-            : "N/A"}
+          {(() => {
+            const today = new Date().toISOString().split("T")[0];
+
+            const todayOpen = singleGameData.openNo?.find(
+              (item) => item[2]?.split("T")[0] === today
+            );
+
+            const todayClose = singleGameData.closeNo?.find(
+              (item) => item[2]?.split("T")[0] === today
+            );
+
+            return todayOpen && todayClose
+              ? todayOpen.slice(0, 2).join("-") +
+                  todayClose[1] +
+                  "-" +
+                  todayClose[0]
+              : "N/A";
+          })()}
         </h3>
       </div>
     </div>
