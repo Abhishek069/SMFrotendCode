@@ -12,7 +12,7 @@ const PanelPage = () => {
   const [hiddenDays, setHiddenDays] = useState([]); // admin can hide specific day columns
 
   const { id } = useParams();
-  const isAdmin = localStorage.getItem("role") === "admin";
+  const isAdmin = (localStorage.getItem("role") || "").trim().toLowerCase() === "admin";
 
   const fetchSingleGameData = async () => {
     try {
@@ -113,10 +113,20 @@ const PanelPage = () => {
 
         {isAdmin && (
           <div className="mb-2">
-            {["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"].map((day) => (
+            <p style={{ marginBottom: 8 }}>Admin status: {String(isAdmin)}</p>
+            {[
+              "Monday",
+              "Tuesday",
+              "Wednesday",
+              "Thursday",
+              "Friday",
+              "Saturday",
+              "Sunday",
+            ].map((day) => (
               <button
                 key={day}
                 className="btn btn-sm btn-dark m-1"
+                style={{ background: "#111", color: "#fff", padding: "6px 10px", borderRadius: 4 }}
                 onClick={() =>
                   setHiddenDays((prev) =>
                     prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]
