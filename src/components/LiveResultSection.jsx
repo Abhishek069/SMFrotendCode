@@ -133,6 +133,8 @@ const LiveResultSection = () => {
 
     fetchResults();
   }, []);
+  console.log(results);
+  
 
   if (loading) {
     return (
