@@ -620,13 +620,11 @@
 }
 
 .Live-Result-section-main-container,
-/* .Live-result-item-main-container {
-  border: solid 1px rgb(255, 217, 0);
-} */
-
 .Live-result-item-main-container {
-  padding: 10px;
+  border: solid 1px rgb(255, 217, 0);
 }
+
+
 
 .notice-continer-heading {
   background-color: #ff5733;

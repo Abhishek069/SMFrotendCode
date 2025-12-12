@@ -6,8 +6,20 @@ export default function PanelMatkaTable({
   groupedByDayOpen = {},
   baseDateFromData,
   gameName = "",
+  noOfDays = 7, // <-- new prop (accepts 5, 6, or 7). default 7
 }) {
-  const headers = ["Week", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  // normalize noOfDays to 5/6/7
+  const nd = Number(noOfDays);
+  let daysCount = 7;
+  if (Number.isFinite(nd)) {
+    if (nd === 7) daysCount = 7;
+    else if (nd === 6) daysCount = 6;
+    else daysCount = 5; // fallback
+  }
+
+  // short names and dynamic headers (include "Week")
+  const daysShort = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const headers = ["Week", ...daysShort.slice(0, daysCount)];
 
   const dayMap = {
     Monday: "Mon",
@@ -28,32 +40,26 @@ export default function PanelMatkaTable({
     return `${d}-${m}-${y}`;
   };
 
-  // -----------------------------------------
   // WEEK INDEX CALCULATOR
-  // -----------------------------------------
   const getWeekIndex = (entryDate, mondayBase) => {
     const msPerDay = 24 * 60 * 60 * 1000;
     const diff = (entryDate - mondayBase) / msPerDay;
     return Math.floor(diff / 7);
   };
 
-  // -----------------------------------------
   // Force any date to Monday
-  // -----------------------------------------
   const getMonday = (date) => {
     const d = new Date(date);
     const day = d.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
-    const diff = day === 0 ? -6 : 1 - day; 
+    const diff = day === 0 ? -6 : 1 - day;
     d.setDate(d.getDate() + diff);
     return d;
   };
 
-  // **We convert baseDate to Monday reference**
+  // We convert baseDate to Monday reference
   const mondayBaseDate = getMonday(baseDate);
 
-  // -----------------------------------------
   // BUILD weekData
-  // -----------------------------------------
   const weekData = {};
 
   // OPEN DATA
@@ -82,12 +88,14 @@ export default function PanelMatkaTable({
     });
   });
 
-  // -----------------------------------------
   // Sort week indexes
-  // -----------------------------------------
   const existingWeekIndexes = Object.keys(weekData)
     .map((n) => Number(n))
     .sort((a, b) => a - b);
+
+  if (existingWeekIndexes.length === 0) {
+    return <div>No data available</div>;
+  }
 
   const minWeek = existingWeekIndexes[0];
   const maxWeek = existingWeekIndexes[existingWeekIndexes.length - 1];
@@ -95,9 +103,7 @@ export default function PanelMatkaTable({
   const weekIndexes = [];
   for (let w = minWeek; w <= maxWeek; w++) weekIndexes.push(w);
 
-  // -----------------------------------------
   // BUILD FINAL TABLE ROWS
-  // -----------------------------------------
   const data = weekIndexes.map((weekIndex) => {
     // Start week from Monday always
     const startOfWeek = new Date(mondayBaseDate);
@@ -109,7 +115,8 @@ export default function PanelMatkaTable({
     const weekStartStr = formatDate(startOfWeek);
     const weekEndStr = formatDate(endOfWeek);
 
-    const rowData = Object.values(dayMap).map((shortDay) => {
+    // only iterate the required short days (Mon..Fri/Mon..Sat/Mon..Sun)
+    const rowData = daysShort.slice(0, daysCount).map((shortDay) => {
       const fullDay = Object.keys(dayMap).find((k) => dayMap[k] === shortDay);
 
       const weekEntry = weekData[weekIndex] || {};
@@ -131,17 +138,27 @@ export default function PanelMatkaTable({
 
   return (
     <div className="panel-table-wrapper compact-layout">
-      <button className="go-bottom" onClick={() => { window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "smooth",});
-    }}>Go to Bottom </button>
+      <button
+        className="go-bottom"
+        onClick={() => {
+          window.scrollTo({
+            top: document.documentElement.scrollHeight,
+            behavior: "smooth",
+          });
+        }}
+      >
+        Go to Bottom{" "}
+      </button>
 
       <div className="table-responsive compact-table-box">
         <table className="matka-table compact-table">
           <thead>
             <tr>
-              <th colSpan={8} className="title compact-title">
+              {/* colSpan must match headers length */}
+              <th colSpan={headers.length} className="title compact-title">
                 {gameName} MATKA PANEL RECORD 2019 - 2025
               </th>
-            </tr> 
+            </tr>
             <tr>
               {headers.map((day) => (
                 <th key={day} className="day compact-day">
@@ -154,7 +171,11 @@ export default function PanelMatkaTable({
           <tbody>
             {data.map((row, rowIndex) => (
               <tr key={rowIndex}>
-                <td className="week-cell" style={{ textAlign: "center", padding: "6px 4px" }}>
+                {/* Week column */}
+                <td
+                  className="week-cell"
+                  style={{ textAlign: "center", padding: "6px 4px" }}
+                >
                   <div style={{ fontSize: "11px", fontWeight: "600" }}>
                     {row.weekStartStr}
                   </div>
@@ -164,8 +185,13 @@ export default function PanelMatkaTable({
                   </div>
                 </td>
 
+                {/* Day columns - only the sliced ones */}
                 {row.rowData.map(({ openPanel, jodi, closePanel }, colIndex) => (
-                  <td key={colIndex} className="cell" style={{ padding: "4px", textAlign: "center" }}>
+                  <td
+                    key={colIndex}
+                    className="cell"
+                    style={{ padding: "4px", textAlign: "center" }}
+                  >
                     {openPanel[0] && closePanel[0] ? (
                       <div className="data-of-jodi-open-close compact-data-box">
                         <div className="small-panel compact-panel">
@@ -174,7 +200,11 @@ export default function PanelMatkaTable({
                           ))}
                         </div>
 
-                        <div className={`big-jodi compact-jodi ${redNumbers.includes(jodi) ? "red" : ""}`}>
+                        <div
+                          className={`big-jodi compact-jodi ${
+                            redNumbers.includes(jodi) ? "red" : ""
+                          }`}
+                        >
                           <span>{jodi || "-"}</span>
                         </div>
 
@@ -194,7 +224,12 @@ export default function PanelMatkaTable({
           </tbody>
         </table>
       </div>
-      <button className="go-up" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>Go to Top</button>
+      <button
+        className="go-up"
+        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+      >
+        Go to Top
+      </button>
     </div>
   );
 }

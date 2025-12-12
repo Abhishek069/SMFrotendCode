@@ -166,7 +166,7 @@ const LiveResultSection = () => {
           <p className="text-center text-danger"  style={{ backgroundColor: "black" }}>{error}</p>
         ) : results.length > 0 ? (
           results.map((item, idx) => (
-            <div className="col-md-4" key={idx}>
+            <div className="col-md-4 mb-0" key={idx}>
               <LiveResultItem
                 title={item.title}
                 numbers={

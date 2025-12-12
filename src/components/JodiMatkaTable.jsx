@@ -2,20 +2,28 @@
 import React from "react";
 import "./Comman.css";
 
-export default function MatkaTable({ noOfDays, groupedData, groupedDataOpen, titleNameHeading }) {
+export default function MatkaTable({
+  noOfDays,
+  groupedData,
+  groupedDataOpen,
+  titleNameHeading,
+}) {
   // accept number or string inputs for flexibility
-  // console.log(noOfDays);   
-  
-  let daysCount = 7
-  if (noOfDays === undefined){
+  // console.log(noOfDays);
+
+  let daysCount = 7;
+
+  if (noOfDays === undefined) {
     daysCount = 7;
+  } else {
+    const nd = Number(noOfDays);
+    if (nd === 7) daysCount = 7;
+    else if (nd === 6) daysCount = 6;
+    else daysCount = 5; // fallback (Mon–Fri)
   }
-  else{
-    daysCount = Number(noOfDays) !== 7 ? 5 : 7;
-  }
+
   // console.log(daysCount);
-  
-  
+
   const daysShort = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
   // headers only the day columns (no "Week" column)
   const headers = daysShort.slice(0, daysCount);
@@ -23,7 +31,9 @@ export default function MatkaTable({ noOfDays, groupedData, groupedDataOpen, tit
   // parse "YYYY-MM-DD" into a local Date (avoids UTC parsing issues)
   const parseLocalDate = (dateStr) => {
     if (!dateStr) return null;
-    const [y, m, d] = String(dateStr).split("-").map((n) => parseInt(n, 10));
+    const [y, m, d] = String(dateStr)
+      .split("-")
+      .map((n) => parseInt(n, 10));
     return new Date(y, m - 1, d, 0, 0, 0, 0);
   };
 
@@ -34,12 +44,19 @@ export default function MatkaTable({ noOfDays, groupedData, groupedDataOpen, tit
       if (!Array.isArray(item)) return;
       let raw = item[2];
       if (!raw) {
-        const maybe = item.find((x) => typeof x === "string" && /\d{4}-\d{2}-\d{2}/.test(x));
+        const maybe = item.find(
+          (x) => typeof x === "string" && /\d{4}-\d{2}-\d{2}/.test(x)
+        );
         raw = maybe || null;
       }
       if (!raw) return;
       const dateKey = String(raw).split("T")[0];
-      if (!map[dateKey]) map[dateKey] = { day: parseLocalDate(dateKey).toLocaleDateString("en-US", { weekday: "long" }) };
+      if (!map[dateKey])
+        map[dateKey] = {
+          day: parseLocalDate(dateKey).toLocaleDateString("en-US", {
+            weekday: "long",
+          }),
+        };
       map[dateKey][type] = item;
     };
 
@@ -94,7 +111,9 @@ export default function MatkaTable({ noOfDays, groupedData, groupedDataOpen, tit
     weekBuckets[w].push(dateKey);
   });
 
-  const weekIndexes = Object.keys(weekBuckets).map(Number).sort((a, b) => a - b);
+  const weekIndexes = Object.keys(weekBuckets)
+    .map(Number)
+    .sort((a, b) => a - b);
 
   const redNumbers = ["44", "50", "38", "99", "61", "05", "77", "88", "66"];
 
@@ -127,7 +146,10 @@ export default function MatkaTable({ noOfDays, groupedData, groupedDataOpen, tit
       const openNum = openItem[1] || "";
       const closeNum = closeItem[1] || "";
 
-      const combined = openNum && closeNum ? `${openNum}${closeNum}` : openNum || closeNum || "";
+      const combined =
+        openNum && closeNum
+          ? `${openNum}${closeNum}`
+          : openNum || closeNum || "";
 
       cells.push({ text: combined, dateKey });
     }
@@ -140,7 +162,10 @@ export default function MatkaTable({ noOfDays, groupedData, groupedDataOpen, tit
       <button
         className="go-bottom"
         onClick={() => {
-          window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "smooth" });
+          window.scrollTo({
+            top: document.documentElement.scrollHeight,
+            behavior: "smooth",
+          });
         }}
       >
         Go to Bottom
@@ -167,10 +192,18 @@ export default function MatkaTable({ noOfDays, groupedData, groupedDataOpen, tit
             <tr key={rIdx}>
               {/* Day cells (daysCount columns) */}
               {row.cells.map((cell, cIdx) => {
-                const shouldHighlight = cell.text && redNumbers.some((num) => cell.text.includes(num));
+                const shouldHighlight =
+                  cell.text &&
+                  redNumbers.some((num) => cell.text.includes(num));
                 return (
-                  <td key={cIdx} className={shouldHighlight ? "red" : ""} style={{ textAlign: "center", padding: "6px" }}>
-                    <div style={{ fontSize: "18px", fontWeight: 700 }}>{cell.text || "-"}</div>
+                  <td
+                    key={cIdx}
+                    className={shouldHighlight ? "red" : ""}
+                    style={{ textAlign: "center", padding: "6px" }}
+                  >
+                    <div style={{ fontSize: "18px", fontWeight: 700 }}>
+                      {cell.text || "-"}
+                    </div>
                     {/* uncomment to debug date: <div style={{ fontSize: 10 }}>{cell.dateKey || ""}</div> */}
                   </td>
                 );
@@ -180,7 +213,10 @@ export default function MatkaTable({ noOfDays, groupedData, groupedDataOpen, tit
         </tbody>
       </table>
 
-      <button className="go-up" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
+      <button
+        className="go-up"
+        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+      >
         Go to Top
       </button>
     </div>

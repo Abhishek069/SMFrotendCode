@@ -136,6 +136,7 @@ const PanelPage = () => {
         groupedByDayOpen={groupedByDayOpen}
         gameName={singleGameData.name}
         baseDateFromData={baseDateFromData}
+        noOfDays = {singleGameData.noOfDays}
       />
 
       <div className="border m-1 border-danger text-center " style={{ backgroundColor: "Pink" }}>
