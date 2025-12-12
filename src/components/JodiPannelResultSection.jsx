@@ -156,7 +156,6 @@ export default function JodiPannelResultSection() {
   // The function that calls backend
   const handleDeleteRecord = async () => {
 
-    
     if (!deleteGameId) {
       toast.error("Select a game");
       return;

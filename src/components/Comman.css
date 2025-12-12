@@ -68,8 +68,9 @@
   border: solid 1px red;
 }
 .Live-result-item-main-container{
-  border: solid 1px red;
+  border: solid 2px rgb(255, 251, 0);
   padding: 10px;
+  background-color: black;
 }
 
 .lucky-number-section-heading{
@@ -99,7 +100,7 @@
   font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
   font-style: italic;
   font-size: 20px;
-  color: rgb(37, 4, 128);
+  color: rgb(238, 255, 3);
 }
 
 .LiveResultItemHNumber{
@@ -107,7 +108,11 @@
   font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
   font-style: italic;
   font-size: 20px;
-  color: rgb(14, 121, 5);
+  color: rgb(255, 255, 255);
+  
+}
+.live-times-value{
+  color: rgb(238, 255, 3);
 }
 .jodi-panel-container-second{
   width: 100%;
@@ -615,9 +620,9 @@
 }
 
 .Live-Result-section-main-container,
-.Live-result-item-main-container {
-  border: solid 1px red;
-}
+/* .Live-result-item-main-container {
+  border: solid 1px rgb(255, 217, 0);
+} */
 
 .Live-result-item-main-container {
   padding: 10px;
