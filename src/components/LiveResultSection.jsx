@@ -112,7 +112,7 @@ const LiveResultSection = () => {
               title: game.name,
               numbers: lastResult,
               openTime: openTimeFromGame,
-              closeTimeFromGame,
+              closeTime: closeTimeFromGame,
               updatedAt: game.updatedAt,
             };
           });
@@ -133,7 +133,7 @@ const LiveResultSection = () => {
 
     fetchResults();
   }, []);
-  console.log(results);
+  // console.log(results);
   
 
   if (loading) {
