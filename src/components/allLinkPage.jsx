@@ -10,7 +10,8 @@ import {useNavigate} from 'react-router-dom'
 
 
 // Main component
-const AllPageLink = () => {
+const AllPageLink = (props) => {
+  const {page} = props
   const [games, setGames] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -20,7 +21,7 @@ const AllPageLink = () => {
   // Function to handle redirection
   const handleGameClick = (gameId) => {
     // Redirects to the specified path with the game ID
-    navigate(`/JodiPanPage/${gameId}`);
+    navigate(`/${page}/${gameId}`);
   };
 
   const fetchGamesAgain = async () => {

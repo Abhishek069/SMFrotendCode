@@ -2,8 +2,6 @@
 import React from "react";
 
 const LiveResultItem = ({ title, numbers, openTime, closeTime }) => {
-  // console.log(  startTime, endTime);
-
   return (
     <div className="text-center mb-4 m-1 Live-result-item-main-container bg-[#ffea00]">
       <h5 className="text-uppercase fw-bold LiveResultItemHeading">{title}</h5>

@@ -18,7 +18,6 @@ const AllUsersPage = () => {
         console.error("Invalid token", err);
       }
     }
-  console.log(role);
 
   useEffect(()=>{
     if(role!=='Admin'){

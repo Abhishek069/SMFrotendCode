@@ -36,25 +36,27 @@ const StaticButtons = () => {
       style={{
         position: "fixed",
         bottom: "20px",
-        right: "20px",
+        right: "10px",
         zIndex: 1000,
         display: "flex",
-        flexDirection: "column",
+        justifyContent: "space-between",
+        flexDirection: "row",
         gap: "10px",
+        width: "95%"
       }}
     >
       {/* 📞 Dial Pad Button */}
       <button
         onClick={handleCall}
         style={{
-          padding: "10px 20px",
+          padding: "8px 16px",
           backgroundColor: "#4CAF50",
           color: "white",
           border: "none",
           borderRadius: "5px",
           cursor: "pointer",
           boxShadow: "0 2px 5px rgba(0,0,0,0.3)",
-          fontSize: "16px",
+          fontSize: "12px",
         }}
       >
         📞 Call Admin
@@ -71,7 +73,7 @@ const StaticButtons = () => {
           borderRadius: "5px",
           cursor: "pointer",
           boxShadow: "0 2px 5px rgba(0,0,0,0.3)",
-          fontSize: "16px",
+          fontSize: "12px",
         }}
       >
         🔄 Refresh Page
@@ -94,7 +96,6 @@ const HomePage = ({ setGameTitle }) => {
         const decoded = jwtDecode(token);
         // role = decoded.role;
         role = decoded.role;
-        // console.log(role, role);
       } catch (err) {
         console.error("Invalid token", err);
       }
@@ -126,7 +127,6 @@ const HomePage = ({ setGameTitle }) => {
         return;
       }
       setResponseNotification(notificationsArray);
-      // console.log("✅ Notifications fetched:", notificationsArray);
     } catch (error) {
       console.error("❌ Error retrieving notification:", error);
     }
@@ -190,7 +190,8 @@ const HomePage = ({ setGameTitle }) => {
         />
         <StarlStarlineSectionineTable />
         <MainBombay36Bazar />
-        <AllPageLink/>
+        <AllPageLink page={"JodiPanPage"}/>
+        <AllPageLink page={"PanelPage"}/>
         <DpBossPage />
         <NotificationPage
           role={role}

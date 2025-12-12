@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { jwtDecode } from "jwt-decode";
+// import jwtDecode from "jwt-decode";
 import { Await, useNavigate } from "react-router-dom";
 import { api } from "../lib/api";
 import "./Comman.css";
@@ -98,6 +99,7 @@ export default function JodiPannelResultSection() {
     name: "",
     owner: "",
     resultNo: "111-11-111",
+    noOfDays: "",
     startTime: "",
     status: "Active",
     endTime: "",
@@ -119,6 +121,7 @@ export default function JodiPannelResultSection() {
     _id: "",
     name: "",
     owner: "",
+    noOfDays: "",
     startTime: "",
     endTime: "",
     resultNo: "",
@@ -132,7 +135,7 @@ export default function JodiPannelResultSection() {
   const [deleteGameName, setDeleteGameName] = useState("");
   const [linkForUpdateGame, setLinkForUpdateGame] = useState("");
   const [selectedStatus, setSelectedStatus] = useState();
-  const nowDateAndTime = new Date().toISOString();
+  // const nowDateAndTime = new Date().toISOString();
 
   // ⭐ NEW STATES FOR RANGE RESULT MODAL ⭐
   const [showRangeModal, setShowRangeModal] = useState(false);
@@ -144,42 +147,132 @@ export default function JodiPannelResultSection() {
   // errors for each date key, e.g. { "2025-01-25": "message" }
   const [rangeErrors, setRangeErrors] = useState({});
 
-  const rangeGame = games.find((g) => g._id === rangeGameId);
+  // Add these state vars near other hooks
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteGameId, setDeleteGameId] = useState(""); // set to item._id if invoking from within a card
+  const [deleteType, setDeleteType] = useState("Open");
+  const [deleteDate, setDeleteDate] = useState("");
 
-  // console.log(nowDateAndTime);
+  // The function that calls backend
+  const handleDeleteRecord = async () => {
+
+    
+    if (!deleteGameId) {
+      toast.error("Select a game");
+      return;
+    }
+    if (!deleteDate) {
+      toast.error("Select a date");
+      return;
+    }
+    if (!["Open", "Close"].includes(deleteType)) {
+      toast.error("Select Open or Close");
+      return;
+    }
+
+    // Confirmation
+    if (
+      !window.confirm(
+        `Delete ${deleteType} records for ${deleteDate}? This action cannot be undone.`
+      )
+    ) {
+      return;
+    }
+
+    try {
+      const res = await api(`/AllGames/deleteRecord/${deleteGameId}`, {
+        method: "PUT",
+        body: JSON.stringify({ date: deleteDate, type: deleteType }),
+      });
+
+      if (res && res.success) {
+        toast.success(res.message || "Record deleted");
+        setShowDeleteModal(false);
+        setDeleteDate("");
+        setDeleteType("Open");
+        setDeleteGameId("");
+        fetchGamesAgain(); // refresh UI
+      } else {
+        toast.error(res?.message || "Failed to delete record");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Error deleting record");
+    }
+  };
+
+  const rangeGame = games.find((g) => g._id === rangeGameId);
+  const DatesForTheGame = [7, 5];
 
   // 🔹 Handlers
   // const handleFormChange = (e) => {
   //   setNewGame({ ...newGame, [e.target.name]: e.target.value });
   // };
 
+  // const handleAddGame = async (e) => {
+  //   e.preventDefault();
+  //   try {
+  //     const res = await api("/AllGames/addGame", {
+  //       method: "POST",
+  //       body: JSON.stringify(newGame),
+  //     });
+  //     if (res.success) {
+  //       toast.success("Game added successfully!");
+  //       setShowModal(false);
+  //       fetchGamesAgain();
+  //       setNewGame({
+  //         name: "",
+  //         owner: "",
+  //         resultNo: "",
+  //         startTime: "",
+  //         endTime: "",
+  //         nameColor: "#000000",
+  //         resultColor: "#000000",
+  //         backgroundColor: "#ffcb99",
+  //         notificationColor: "#ff0000",
+  //       });
+  //     } else {
+  //       toast.success(res.error);
+  //     }
+  //   } catch (err) {
+  //     console.error("Error adding game:", err);
+  //   }
+  // };
+
   const handleAddGame = async (e) => {
     e.preventDefault();
     try {
+      const payload = { ...newGame };
+      if (payload._id) delete payload._id; // defensive: never send _id on create
+
       const res = await api("/AllGames/addGame", {
         method: "POST",
-        body: JSON.stringify(newGame),
+        body: JSON.stringify(payload),
       });
+
       if (res.success) {
         toast.success("Game added successfully!");
         setShowModal(false);
-        fetchGamesAgain();
         setNewGame({
           name: "",
           owner: "",
           resultNo: "",
+          noOfDays: "",
           startTime: "",
           endTime: "",
+          status: "Active",
           nameColor: "#000000",
           resultColor: "#000000",
-          backgroundColor: "#ffcb99",
+          panelColor: "#ffcb99",
           notificationColor: "#ff0000",
         });
+        fetchGamesAgain();
       } else {
-        toast.success(res.error);
+        toast.error(res.error || res.message || "Failed to add game");
       }
     } catch (err) {
       console.error("Error adding game:", err);
+      toast.error(err.message || "Error adding game");
     }
   };
 
@@ -247,7 +340,7 @@ export default function JodiPannelResultSection() {
       setRangeDays(days);
 
       const obj = {};
-      console.log(days);
+      // console.log(days);
 
       days.forEach((d) => {
         const key = d.toISOString().split("T")[0];
@@ -259,7 +352,7 @@ export default function JodiPannelResultSection() {
         // If both exist → show 2 separate entries
         // but your UI has one input per day
         // so we store whichever the user selects
-        console.log();
+        // console.log();
 
         obj[key] = {
           result: {
@@ -270,19 +363,17 @@ export default function JodiPannelResultSection() {
         };
       });
 
-      console.log(obj);
-
       setRangeData(obj);
     }
   }, [rangeStart, rangeEnd, rangeGame]);
 
   // ⭐ Compute check digit (sum last 3 digits % 10)
-  const computeCheckDigit = (num) => {
-    const digits = num.split("").map(Number);
-    const last3 = digits.slice(-3);
-    const sum = last3.reduce((a, b) => a + b, 0);
-    return sum % 10;
-  };
+  // const computeCheckDigit = (num) => {
+  //   const digits = num.split("").map(Number);
+  //   const last3 = digits.slice(-3);
+  //   const sum = last3.reduce((a, b) => a + b, 0);
+  //   return sum % 10;
+  // };
 
   // ⭐ Save range results (multiple days)
   // const handleSaveRangeResults = async () => {
@@ -601,8 +692,8 @@ export default function JodiPannelResultSection() {
       } else {
         toast.error(res.error || "Update failed");
       }
-    } catch (err) {
-      toast.error("Error updating game");
+    } catch ({ err }) {
+      toast.error("Error updating game", err);
     }
   };
 
@@ -680,6 +771,7 @@ export default function JodiPannelResultSection() {
             resultColor: editGame.resultColor || "#000000",
             panelColor: editGame.panelColor || "#ffcb99",
             notificationColor: editGame.notificationColor || "#ff0000",
+            noOfDays: editGame.noOfDays,
           }),
         });
 
@@ -772,19 +864,19 @@ export default function JodiPannelResultSection() {
         const d1 = parseInt(mainNumber[0], 10);
         const d2 = parseInt(mainNumber[1], 10);
         const d3 = parseInt(mainNumber[2], 10);
-      
+
         // 0 => 10 everywhere
-        const firstDigit  = d1 === 0 ? 10 : d1;
+        const firstDigit = d1 === 0 ? 10 : d1;
         const secondDigit = d2 === 0 ? 10 : d2;
-        const thirdDigit  = d3 === 0 ? 10 : d3;
-      
+        const thirdDigit = d3 === 0 ? 10 : d3;
+
         if (!(firstDigit <= secondDigit && secondDigit <= thirdDigit)) {
           toast.error(
             "Invalid number Please check or contact operator : First < Second < Third"
           );
-          return; 
+          return;
         }
-      } 
+      }
 
       if (mainNumber.length >= 3) {
         const lastThree = mainNumber.slice(-3).split("").map(Number);
@@ -842,13 +934,11 @@ export default function JodiPannelResultSection() {
   }
 
   function isOlderThan12Hours(dateString) {
-    
     const updated = new Date(dateString);
     const now = new Date();
     const diffMs = now - updated; // difference in milliseconds
     const hours = diffMs / (1000 * 60 * 60); // convert to hours
-    // console.log(hours, hours >= 24, item);
-    
+
     return hours >= 24;
   }
 
@@ -898,10 +988,10 @@ export default function JodiPannelResultSection() {
     return "***-**-***";
   };
 
-  const canEditGame = (game, role, username) => {
-    if (role === "Admin") return true;
-    return game.owner === username;
-  };
+  // const canEditGame = (game, role, username) => {
+  //   if (role === "Admin") return true;
+  //   return game.owner === username;
+  // };
 
   const findResultForDate = (list, dateKey) => {
     // dateKey = "2025-01-25"
@@ -956,7 +1046,6 @@ export default function JodiPannelResultSection() {
     if (mainDigits.length >= 2) {
       const first = parseInt(mainDigits[0], 10);
       const second = parseInt(mainDigits[1], 10);
-      console.log(first, second);
       if (second !== 0) {
         if (first > second) {
           return {
@@ -1007,10 +1096,53 @@ export default function JodiPannelResultSection() {
             className="btn btn-success m-1"
             onClick={() => {
               setModalType("addGame");
+
+              // Clear newGame so you don't send a stale _id or other values
+              setNewGame({
+                name: "",
+                owner: "",
+                resultNo: "111-11-111",
+                noOfDays: "",
+                startTime: "",
+                status: "Active",
+                endTime: "",
+                nameColor: "#000000",
+                resultColor: "#000000",
+                panelColor: "#ffcb99",
+                notificationColor: "#ff0000",
+              });
+
+              // Clear any selected edit state so edit modal doesn't show stale data
+              setEditFullGame({
+                _id: "",
+                name: "",
+                owner: "",
+                noOfDays: "",
+                startTime: "",
+                endTime: "",
+                resultNo: "",
+                nameColor: "",
+                resultColor: "",
+                panelColor: "",
+                notificationColor: "",
+                status: "Active",
+              });
+
               setShowModal(true);
             }}
           >
             ADD GAME
+          </button>
+
+          <button
+            className="btn btn-outline-danger m-1"
+            onClick={() => {
+              setModalType("deleteRecord");
+              setShowDeleteModal(true);
+              // optional: setDeleteGameId(defaultGameIdIfAny)
+            }}
+          >
+            Delete Record
           </button>
           <button
             className="btn btn-dark m-1"
@@ -1209,7 +1341,6 @@ export default function JodiPannelResultSection() {
                     fontSize: "28px",
                   }}
                 >
-                  {console.log(item.openNo[0], item.name)}
                   {isOlderThan12Hours(item.openNo[0]?.[2], item.name)
                     ? "***-**-***"
                     : displayResult}
@@ -1264,6 +1395,17 @@ export default function JodiPannelResultSection() {
                   >
                     {item.startTime}
                   </p>
+                  {role === "Admin" && (
+                    <p
+                      style={{
+                        color: item.nameColor || "#000000",
+                        marginRight: "15px",
+                      }}
+                    >
+                      {item.liveTime}
+                    </p>
+                  )}
+
                   <p
                     style={{
                       color: item.nameColor || "#000000",
@@ -1338,6 +1480,24 @@ export default function JodiPannelResultSection() {
                   {allUser.map((agent) => (
                     <option key={agent._id} value={agent.name}>
                       {agent.name}
+                    </option>
+                  ))}
+                </select>
+
+                <label>No Of Days</label>
+                <select
+                  name="owner"
+                  value={newGame.noOfDays}
+                  onChange={(e) =>
+                    setNewGame({ ...newGame, noOfDays: e.target.value })
+                  }
+                  required
+                  className="form-control"
+                >
+                  <option value="">-- No Of Days --</option>
+                  {DatesForTheGame.map((agent, id) => (
+                    <option key={id} value={agent}>
+                      {agent}
                     </option>
                   ))}
                 </select>
@@ -1657,6 +1817,27 @@ export default function JodiPannelResultSection() {
                       ))}
                     </select>
 
+                    <label>No Of Days</label>
+                    <select
+                      name="noOfDays"
+                      value={editFullGame.noOfDays}
+                      onChange={(e) =>
+                        setEditFullGame({
+                          ...editFullGame,
+                          noOfDays: e.target.value,
+                        })
+                      }
+                      required
+                      className="form-control"
+                    >
+                      <option value="">-- No Of Days --</option>
+                      {DatesForTheGame.map((agent, id) => (
+                        <option key={id} value={agent}>
+                          {agent}
+                        </option>
+                      ))}
+                    </select>
+
                     <label>Start Time</label>
                     <input
                       type="time"
@@ -1770,6 +1951,61 @@ export default function JodiPannelResultSection() {
                 </button>
               </form>
             )}
+          </div>
+        </div>
+      )}
+
+      {showDeleteModal && (
+        <div className="AddGameModelMainContainer">
+          <div className="AddGameModelSeconContainer">
+            <h3>Delete Record</h3>
+
+            {/* Select Game */}
+            <label>Game</label>
+            <select
+              className="form-control"
+              value={deleteGameId}
+              onChange={(e) => setDeleteGameId(e.target.value)}
+            >
+              <option value="">-- Select game --</option>
+              {games.map((g) => (
+                <option key={g._id} value={g._id}>
+                  {g.name}
+                </option>
+              ))}
+            </select>
+
+            {/* Type */}
+            <label>Type</label>
+            <select
+              className="form-control"
+              value={deleteType}
+              onChange={(e) => setDeleteType(e.target.value)}
+            >
+              <option value="Open">Open</option>
+              <option value="Close">Close</option>
+            </select>
+
+            {/* Date */}
+            <label>Date</label>
+            <input
+              type="date"
+              className="form-control"
+              value={deleteDate}
+              onChange={(e) => setDeleteDate(e.target.value)}
+            />
+
+            <div className="mt-3">
+              <button className="btn btn-danger" onClick={handleDeleteRecord}>
+                Delete
+              </button>
+              <button
+                className="btn btn-secondary ms-2"
+                onClick={() => setShowDeleteModal(false)}
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}
