@@ -43,6 +43,9 @@ const LiveResultSection = () => {
         
             const openTimeFromGame = game.startTime || "";
             const closeTimeFromGame = game.endTime || "";
+            const openDate = new Date(game.openNo?.[0]?.[2]);
+            const closeDate = new Date(game.closeNo?.[0]?.[2]);
+            const lastUpdate = openDate > closeDate ? openDate : closeDate;
         
             // HANDLE LOADING BEFORE START TIME
             let startTime = null;
@@ -64,10 +67,12 @@ const LiveResultSection = () => {
                 numbers: "Loading...",
                 openTime: openTimeFromGame,
                 closeTime: closeTimeFromGame,
+                updatedAt: lastUpdate,
               };
             }
         
             const lastOpen = game.openNo?.length ? game.openNo[0] : null;
+            
             const lastClose = game.closeNo?.length ? game.closeNo[0] : null;
         
             if (!lastOpen && !lastClose) {
@@ -76,6 +81,7 @@ const LiveResultSection = () => {
                 numbers: "***_**_***",
                 openTime: openTimeFromGame,
                 closeTime: closeTimeFromGame,
+                updatedAt: lastUpdate,
               };
             }
         
@@ -113,7 +119,7 @@ const LiveResultSection = () => {
               numbers: lastResult,
               openTime: openTimeFromGame,
               closeTime: closeTimeFromGame,
-              updatedAt: game.updatedAt,
+              updatedAt: lastUpdate,
             };
           });
         

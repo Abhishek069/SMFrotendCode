@@ -366,113 +366,6 @@ export default function JodiPannelResultSection() {
     }
   }, [rangeStart, rangeEnd, rangeGame]);
 
-  // ⭐ Compute check digit (sum last 3 digits % 10)
-  // const computeCheckDigit = (num) => {
-  //   const digits = num.split("").map(Number);
-  //   const last3 = digits.slice(-3);
-  //   const sum = last3.reduce((a, b) => a + b, 0);
-  //   return sum % 10;
-  // };
-
-  // ⭐ Save range results (multiple days)
-  // const handleSaveRangeResults = async () => {
-  //   if (!rangeGameId) {
-  //     toast.error("Please select a game");
-  //     return;
-  //   }
-  //   if (!rangeDays || rangeDays.length === 0) {
-  //     toast.error("Please select a date range");
-  //     return;
-  //   }
-
-  //   const errors = {};
-  //   const preparedRows = []; // { key, date, mainDigits, checkDigit, type, dayName }
-
-  //   // Validate all rows first
-  //   for (const d of rangeDays) {
-  //     const key = d.toISOString().split("T")[0];
-  //     const entry = rangeData[key] || { result: "", type: "Open" };
-  //     const raw = (entry.result || "").trim();
-
-  //     const validation = validateRangeEntry(raw);
-  //     if (!validation.ok) {
-  //       errors[key] = validation.msg;
-  //       continue;
-  //     }
-
-  //     // get mainDigits and providedCheck
-  //     const mainDigits = validation.mainDigits;
-  //     const providedCheck = validation.providedCheck;
-
-  //     // compute check digit
-  //     const computedCheck = computeCheckDigitFromDigits(mainDigits);
-  //     const finalCheck =
-  //       providedCheck !== null ? String(providedCheck) : String(computedCheck);
-
-  //     // sanity for type
-  //     const type = entry.type === "Close" ? "Close" : "Open";
-  //     const dayName = d.toLocaleDateString("en-US", { weekday: "long" });
-
-  //     preparedRows.push({
-  //       key,
-  //       date: d,
-  //       mainDigits,
-  //       checkDigit: finalCheck,
-  //       type,
-  //       dayName,
-  //     });
-  //   }
-
-  //   // If any validation errors — show them and abort
-  //   if (Object.keys(errors).length > 0) {
-  //     setRangeErrors(errors);
-  //     // show a toast summary too
-  //     const firstKey = Object.keys(errors)[0];
-  //     toast.error(`Validation failed for ${firstKey}: ${errors[firstKey]}`);
-  //     return;
-  //   } else {
-  //     setRangeErrors({});
-  //   }
-
-  //   // All rows valid — send them one by one to backend (mirroring your backend expectation)
-  //   try {
-  //     for (const r of preparedRows) {
-  //       const payloadArray = [
-  //         r.mainDigits,
-  //         r.checkDigit,
-  //         r.date.toISOString(),
-  //         r.type,
-  //         r.dayName,
-  //       ];
-
-  //       const response = await api(`/AllGames/updateGame/${rangeGameId}`, {
-  //         method: "PUT",
-  //         body: JSON.stringify({ resultNo: payloadArray }),
-  //       });
-
-  //       if (!response || !response.success) {
-  //         throw new Error(
-  //           response?.message || "Failed to save one of the days"
-  //         );
-  //       }
-  //     }
-
-  //     toast.success("All range results saved");
-  //     // reset UI
-  //     // setShowRangeModal(false);
-  //     // setRangeStart("");
-  //     // setRangeEnd("");
-  //     // setRangeDays([]);
-  //     // setRangeData({});
-  //     // setRangeGameId("");
-  //     // setRangeErrors({});
-  //     fetchGamesAgain();
-  //   } catch (err) {
-  //     console.error("Error saving range results:", err);
-  //     toast.error("Error saving range results: " + (err.message || err));
-  //   }
-  // };
-
   const handleSaveRangeResults = async () => {
     if (!rangeGameId) {
       toast.error("Please select a game");
@@ -485,14 +378,17 @@ export default function JodiPannelResultSection() {
 
     const errors = {};
     const preparedRows = [];
-
+    console.log(rangeDays);
+    
     for (const d of rangeDays) {
+      
       const key = d.toISOString().split("T")[0];
+
       const entry = rangeData[key] || {
         result: { open: "", close: "" },
         type: "Open",
       };
-
+      
       const raw =
         entry.type === "Open"
           ? (entry.result.open || "").trim()
@@ -933,6 +829,8 @@ export default function JodiPannelResultSection() {
   }
 
   function isOlderThan12Hours(dateString) {
+    // console.log(dateString,name);
+    
     const updated = new Date(dateString);
     const now = new Date();
     const diffMs = now - updated; // difference in milliseconds
@@ -1826,7 +1724,6 @@ export default function JodiPannelResultSection() {
                           noOfDays: e.target.value,
                         })
                       }
-                      required
                       className="form-control"
                     >
                       <option value="">-- No Of Days --</option>

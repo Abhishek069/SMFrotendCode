@@ -80,7 +80,7 @@ const AllPageLink = (props) => {
           className="bg-pink-600 text-white text-center py-3 font-extrabold text-xl sm:text-2xl tracking-wider"
           style={{ backgroundColor: '#ff69b4',fontSize:"20px", fontWeight:"bold" }} // Use a brighter pink for the header
         >
-          SATTA MATKA JODI CHART
+          {page === "JodiPanPage" ? "JODI CHART" : "PANEL CHART"}
         </div>
         
         {/* List Container */}
