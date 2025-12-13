@@ -155,7 +155,6 @@ export default function JodiPannelResultSection() {
 
   // The function that calls backend
   const handleDeleteRecord = async () => {
-
     if (!deleteGameId) {
       toast.error("Select a game");
       return;
@@ -379,16 +378,15 @@ export default function JodiPannelResultSection() {
     const errors = {};
     const preparedRows = [];
     console.log(rangeDays);
-    
+
     for (const d of rangeDays) {
-      
       const key = d.toISOString().split("T")[0];
 
       const entry = rangeData[key] || {
         result: { open: "", close: "" },
         type: "Open",
       };
-      
+
       const raw =
         entry.type === "Open"
           ? (entry.result.open || "").trim()
@@ -611,11 +609,47 @@ export default function JodiPannelResultSection() {
   //     const startB = getStartTimeAsDate(b.startTime);
   //     return startA - startB; // ascending: closest time first
   //   });
+  // const sortedGames = [...games].sort((a, b) => {
+  //   const diffA = Math.abs(getStartTimeAsDate(a.startTime) - new Date());
+  //   const diffB = Math.abs(getStartTimeAsDate(b.startTime) - new Date());
+  //   return diffA - diffB; // closest to now first
+  // });
   const sortedGames = [...games].sort((a, b) => {
-    const diffA = Math.abs(getStartTimeAsDate(a.startTime) - new Date());
-    const diffB = Math.abs(getStartTimeAsDate(b.startTime) - new Date());
-    return diffA - diffB; // closest to now first
+    const diffA = getNearestGameTime(a);
+    const diffB = getNearestGameTime(b);
+
+    return diffA - diffB;
   });
+
+  function timeToTodayDate(timeStr) {
+    if (!timeStr) return null;
+
+    const now = new Date();
+    const [h, m] = timeStr.split(":").map(Number);
+
+    return new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, 0);
+  }
+
+  function getNearestGameTime(game) {
+    const now = new Date();
+
+    const start = timeToTodayDate(game.startTime);
+    const end = timeToTodayDate(game.endTime);
+
+    const DAY = 24 * 60 * 60 * 1000;
+
+    const normalize = (t) => {
+      if (!t) return Infinity;
+      let diff = t - now;
+      if (diff < 0) diff += DAY; // push past times to next day
+      return diff;
+    };
+
+    const startDiff = normalize(start);
+    const endDiff = normalize(end);
+
+    return Math.min(startDiff, endDiff);
+  }
 
   const handleSaveFontSize = async (gameId) => {
     try {
@@ -830,7 +864,7 @@ export default function JodiPannelResultSection() {
 
   function isOlderThan12Hours(dateString) {
     // console.log(dateString,name);
-    
+
     const updated = new Date(dateString);
     const now = new Date();
     const diffMs = now - updated; // difference in milliseconds
