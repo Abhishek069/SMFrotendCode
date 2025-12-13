@@ -201,7 +201,7 @@ export default function JodiPannelResultSection() {
   };
 
   const rangeGame = games.find((g) => g._id === rangeGameId);
-  const DatesForTheGame = [7, 5];
+  const DatesForTheGame = [7, 6, 5];
 
   // 🔹 Handlers
   // const handleFormChange = (e) => {
